@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using neeksdk.Scripts.Configs;
 using neeksdk.Scripts.Constants;
 using neeksdk.Scripts.LevelCreator;
 using neeksdk.Scripts.LevelCreator.Lines.Mono;
+using neeksdk.Scripts.Properties;
 using UnityEditor;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -23,6 +25,7 @@ namespace neeksdk.Editor {
         
         private BezierLineConfig _bezierLineConfig;
         private BezierLine _selectedBezierLine;
+        private Transform _selectedBezierDot;
 
         private enum Mode {
             View,
@@ -68,6 +71,7 @@ namespace neeksdk.Editor {
             DrawModeGui();
             ModeHandler();
             EventHandler();
+            DetectDots();
             if (Event.current.type == EventType.MouseMove) SceneView.RepaintAll();
         }
 
@@ -163,9 +167,8 @@ namespace neeksdk.Editor {
                 return;
             }
             
-            EditorGUILayout.LabelField ("Piece Edited", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField ("Dot Edited", EditorStyles.boldLabel);
             if (_itemInspected != null) {
-                //StageProperty cp = (StageProperty)_itemInspected.inspectedScript;
                 EditorGUILayout.BeginVertical("box");
                 EditorGUILayout.LabelField("Name: " + _itemInspected.name);
                 CreateEditor(_itemInspected.inspectedScript).OnInspectorGUI();
@@ -230,6 +233,7 @@ namespace neeksdk.Editor {
 
         private void ShowDotGUI(BezierLine bezierLine)
         {
+            int deletedIndex = -1;
             for (int index = 0; index < bezierLine.Dots.Count; index++)
             {
                 EditorGUILayout.BeginHorizontal();
@@ -239,15 +243,23 @@ namespace neeksdk.Editor {
                 bool selectDot = GUILayout.Button("select dot", GUILayout.Height(EditorGUIUtility.singleLineHeight));
                 if (selectDot)
                 {
-                    
+                    //todo: add dot selection to editor
                 }
                 
                 bool deleteDot = GUILayout.Button("delete dot", GUILayout.Height(EditorGUIUtility.singleLineHeight));
                 if (deleteDot)
                 {
-                    
+                    deletedIndex = index;
                 }
                 EditorGUILayout.EndHorizontal();
+            }
+
+            if (deletedIndex >= 0)
+            {
+                IBezierLinePart deletedDot = _selectedBezierLine.Dots[deletedIndex];
+                _selectedBezierLine.DeletePoint(deletedIndex);
+                DestroyImmediate(deletedDot.GameObject);
+                deletedIndex = -1;
             }
             
             EditorUtility.SetDirty(_myTarget);
@@ -424,6 +436,7 @@ namespace neeksdk.Editor {
         }
 
         private void MoveTile() {
+            
             Vector3 gridPoint = _myTarget.WorldToGridCoordinates(_itemInspected.transform.position);
             int col = (int) gridPoint.x;
             int row = (int) gridPoint.y;
@@ -587,5 +600,47 @@ namespace neeksdk.Editor {
 
         private void CloseStageConstructor() =>
             SceneView.lastActiveSceneView.FrameSelected();
+
+        
+        private void DetectDots()
+        {
+            if (_currentMode != Mode.Move)
+            {
+                return;
+            }
+
+            if (RaycastSceneObjects(out RaycastHit raycastHit))
+            {
+                Collider collider = raycastHit.collider;
+                if (collider.tag.Equals("LinePoint") && _selectedBezierDot != collider.transform)
+                {
+                    _selectedBezierDot = collider.transform;
+                    collider.GetComponent<SprColorChanger>()?.ApplyColor(ColorTypes.Selected);
+                }
+            }
+            else
+            {
+                foreach (BezierLine bezierLine in _myTarget.LineRenderers)
+                {
+                    bezierLine.ChangeDotColors(ColorTypes.Normal);
+                }
+
+                _selectedBezierDot = null;
+            }
+        }
+
+        private bool RaycastSceneObjects(out RaycastHit hit)
+        {
+            Ray ray = HandleUtility.GUIPointToWorldRay(Event.current.mousePosition);
+            object raycastResult = HandleUtility.RaySnap(ray);
+            if( raycastResult != null && raycastResult is RaycastHit result)
+            {
+                hit = result;
+                return true;
+            }
+ 
+            hit = new RaycastHit();
+            return false;
+        }
     }
 }

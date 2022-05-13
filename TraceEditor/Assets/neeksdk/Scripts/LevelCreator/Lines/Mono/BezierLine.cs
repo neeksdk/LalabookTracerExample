@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using neeksdk.Scripts.Extensions;
 using neeksdk.Scripts.LevelCreator.Lines.Data;
+using neeksdk.Scripts.Properties;
 using UnityEngine;
 
 namespace neeksdk.Scripts.LevelCreator.Lines.Mono
@@ -10,6 +11,7 @@ namespace neeksdk.Scripts.LevelCreator.Lines.Mono
     {
         [SerializeField] private LineRenderer _lineRenderer;
         [SerializeField] private Transform _startLinePoint;
+        [SerializeField] private SprColorChanger _startLinePointColorChanger;
         [SerializeField] private Transform _fingerPointer;
         [SerializeField] private int _bezierVertexCount;
 
@@ -59,11 +61,21 @@ namespace neeksdk.Scripts.LevelCreator.Lines.Mono
             UpdateLine();
             UpdateFingerPointerRotation();
         }
-        
+
+        public void ChangeDotColors(ColorTypes colorType)
+        {
+            _startLinePointColorChanger.ApplyColor(colorType);
+            foreach (IBezierLinePart bezierLinePart in Dots)
+            {
+                bezierLinePart.ApplyColor(colorType);
+            }
+        }
+
         private void UpdateLine()
         {
             if (_startLinePoint == null || Dots.Count == 0)
             {
+                _lineRenderer.positionCount = 0;
                 return;
             }
             

@@ -48,6 +48,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _linePoint: {fileID: 8647973290090533239}
   _bezierControlPoint: {fileID: 8647973290229540888}
+  _sprLineColorChanger: {fileID: 6915565984885331272}
+  _sprBezierControlColorChanger: {fileID: 3863967801054077472}
 --- !u!114 &3445723557406248694
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -74,6 +76,7 @@ GameObject:
   - component: {fileID: 8647973290090533239}
   - component: {fileID: 8647973290090533237}
   - component: {fileID: 8647973290090533236}
+  - component: {fileID: 6915565984885331272}
   m_Layer: 0
   m_Name: LinePoint
   m_TagString: LinePoint
@@ -161,6 +164,25 @@ CircleCollider2D:
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
   m_Radius: 0.96
+--- !u!114 &6915565984885331272
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8647973290090533238}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 72dd450554fc3c94f8e933a9af7f452e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _colorPresets:
+  - ColorType: 0
+    Color: {r: 1, g: 1, b: 1, a: 1}
+  - ColorType: 1
+    Color: {r: 1, g: 0.9374403, b: 0, a: 1}
+  - ColorType: 2
+    Color: {r: 0, g: 0, b: 0, a: 0.29803923}
 --- !u!1 &8647973290229540891
 GameObject:
   m_ObjectHideFlags: 0
@@ -172,6 +194,7 @@ GameObject:
   - component: {fileID: 8647973290229540888}
   - component: {fileID: 8647973290229540902}
   - component: {fileID: 8647973290229540889}
+  - component: {fileID: 3863967801054077472}
   m_Layer: 0
   m_Name: GizmoControlPoint
   m_TagString: LinePoint
@@ -259,3 +282,22 @@ CircleCollider2D:
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
   m_Radius: 0.96
+--- !u!114 &3863967801054077472
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8647973290229540891}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 72dd450554fc3c94f8e933a9af7f452e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _colorPresets:
+  - ColorType: 0
+    Color: {r: 1, g: 0.5896226, b: 0.5896226, a: 1}
+  - ColorType: 1
+    Color: {r: 1, g: 0.18422438, b: 0, a: 1}
+  - ColorType: 2
+    Color: {r: 0, g: 0, b: 0, a: 0.29803923}

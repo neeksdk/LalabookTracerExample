@@ -47,6 +47,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _lineRenderer: {fileID: 4532107608806923337}
   _startLinePoint: {fileID: 4532107609910838844}
+  _startLinePointColorChanger: {fileID: 5629271856276342155}
   _fingerPointer: {fileID: 4532107610013987325}
   _bezierVertexCount: 12
 --- !u!120 &4532107608806923337
@@ -154,7 +155,8 @@ GameObject:
   m_Component:
   - component: {fileID: 4532107609910838844}
   - component: {fileID: 4532107609910838846}
-  - component: {fileID: 4532107609910838847}
+  - component: {fileID: 5629271856276342155}
+  - component: {fileID: 1108170337412955736}
   m_Layer: 0
   m_Name: StartPoint
   m_TagString: LinePoint
@@ -217,7 +219,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 1
   m_Sprite: {fileID: 21300000, guid: 1291bacee68201c41a44f3c0a788d42a, type: 3}
-  m_Color: {r: 1, g: 0.803521, b: 0, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -227,22 +229,38 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!58 &4532107609910838847
-CircleCollider2D:
+--- !u!114 &5629271856276342155
+MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4532107609910838845}
   m_Enabled: 1
-  m_Density: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 72dd450554fc3c94f8e933a9af7f452e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _colorPresets:
+  - ColorType: 0
+    Color: {r: 1, g: 1, b: 1, a: 1}
+  - ColorType: 1
+    Color: {r: 1, g: 0.9374403, b: 0, a: 1}
+  - ColorType: 2
+    Color: {r: 0, g: 0, b: 0, a: 0.29803923}
+--- !u!135 &1108170337412955736
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4532107609910838845}
   m_Material: {fileID: 0}
   m_IsTrigger: 0
-  m_UsedByEffector: 0
-  m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0}
+  m_Enabled: 1
   serializedVersion: 2
   m_Radius: 0.96
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &4532107610013987298
 GameObject:
   m_ObjectHideFlags: 0
