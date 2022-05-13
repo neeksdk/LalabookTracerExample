@@ -8,13 +8,13 @@ namespace neeksdk.Scripts.LevelCreator.Lines.Mono
     [RequireComponent(typeof(LineRenderer))]
     public class BezierLine : MonoBehaviour, IBezierLine
     {
+        [SerializeField] private LineRenderer _lineRenderer;
         [SerializeField] private Transform _startLinePoint;
         [SerializeField] private Transform _fingerPointer;
         [SerializeField] private int _bezierVertexCount;
 
         private ILineDot _startLineDot;
-        private LineRenderer _lineRenderer;
-        private readonly List<BezierLinePart> _lineParts = new List<BezierLinePart>();
+        public List<IBezierLinePart> Dots { get; } = new List<IBezierLinePart>();
 
         public Transform StartPointTransform => _startLinePoint;
         
@@ -29,15 +29,15 @@ namespace neeksdk.Scripts.LevelCreator.Lines.Mono
             return _startLineDot;
         }
         
-        public void AddPoint(BezierLinePart newLinePart)
+        public void AddPoint(IBezierLinePart newLinePart)
         {
-            _lineParts.Add(newLinePart);
+            Dots.Add(newLinePart);
             UpdateLineWithFingerPoint();
         }
 
-        public void DeletePoint(BezierLinePart bezierLinePart)
+        public void DeletePoint(IBezierLinePart bezierLinePart)
         {
-            if (_lineParts.Remove(bezierLinePart))
+            if (Dots.Remove(bezierLinePart))
             {
                 UpdateLineWithFingerPoint();
             }
@@ -45,12 +45,12 @@ namespace neeksdk.Scripts.LevelCreator.Lines.Mono
 
         public void DeletePoint(int index)
         {
-            if (_lineParts.Count <= index || index < 0)
+            if (Dots.Count <= index || index < 0)
             {
                 return;
             }
             
-            _lineParts.RemoveAt(index);
+            Dots.RemoveAt(index);
             UpdateLineWithFingerPoint();
         }
 
@@ -62,12 +62,12 @@ namespace neeksdk.Scripts.LevelCreator.Lines.Mono
         
         private void UpdateLine()
         {
-            if (_startLinePoint == null || _lineParts.Count == 0)
+            if (_startLinePoint == null || Dots.Count == 0)
             {
                 return;
             }
             
-            _lineRenderer.PopulateBezierPoints(_startLinePoint.position, _lineParts, _bezierVertexCount);
+            _lineRenderer.PopulateBezierPoints(_startLinePoint.position, Dots, _bezierVertexCount);
         }
 
         private void UpdateFingerPointerRotation()
@@ -78,11 +78,6 @@ namespace neeksdk.Scripts.LevelCreator.Lines.Mono
             }
             
             _fingerPointer.LookAtZAxis(_lineRenderer.GetPosition(1));
-        }
-        
-        private void Awake()
-        {
-            _lineRenderer = GetComponent<LineRenderer>();
         }
     }
 }

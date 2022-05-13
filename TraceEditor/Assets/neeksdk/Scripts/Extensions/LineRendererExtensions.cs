@@ -6,11 +6,11 @@ namespace neeksdk.Scripts.Extensions
 {
     public static class LineRendererExtensions
     {
-        public static void PopulateBezierPoints(this LineRenderer lineRenderer, Vector3 initialPos, List<BezierLinePart> lineParts, int vertexCount = 12)
+        public static void PopulateBezierPoints(this LineRenderer lineRenderer, Vector3 initialPos, List<IBezierLinePart> lineParts, int vertexCount = 12)
         {
             List<Vector3> pointList = new List<Vector3>();
             Vector3 startPos = initialPos;
-            foreach (BezierLinePart linePart in lineParts)
+            foreach (IBezierLinePart linePart in lineParts)
             {
                 Vector3 bezierPos = linePart.GetBezierControlDotPosition;
                 Vector3 endPos = linePart.GetLineDotPosition;
@@ -24,7 +24,7 @@ namespace neeksdk.Scripts.Extensions
                 startPos = linePart.GetLineDotPosition;
             }
             
-            lineRenderer.positionCount = lineParts.Count;
+            lineRenderer.positionCount = pointList.Count;
             lineRenderer.SetPositions(pointList.ToArray());
         }
     }

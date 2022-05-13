@@ -45,6 +45,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7e73f6989f5a4c2194769bf92d083371, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _lineRenderer: {fileID: 4532107608806923337}
   _startLinePoint: {fileID: 4532107609910838844}
   _fingerPointer: {fileID: 4532107610013987325}
   _bezierVertexCount: 12

@@ -2,8 +2,8 @@ namespace neeksdk.Scripts.LevelCreator.Lines.Mono
 {
     public interface IBezierLine
     {
-        void AddPoint(BezierLinePart newLinePart);
-        void DeletePoint(BezierLinePart bezierLinePart);
+        void AddPoint(IBezierLinePart newLinePart);
+        void DeletePoint(IBezierLinePart bezierLinePart);
         void DeletePoint(int index);
         void UpdateLineWithFingerPoint();
     }

@@ -27,7 +27,7 @@ namespace neeksdk.Editor {
         private enum Mode {
             View,
             Paint,
-            Edit,
+            Move,
             Erase
         }
 
@@ -159,7 +159,7 @@ namespace neeksdk.Editor {
         }
 
         private void DrawInspectedItemGui() {
-            if(_currentMode != Mode.Edit) {
+            if(_currentMode != Mode.Move) {
                 return;
             }
             
@@ -183,9 +183,10 @@ namespace neeksdk.Editor {
             
             for (int i = 0; i < lineRenderersProperty.arraySize; i++)
             {
+                EditorGUILayout.BeginVertical("box");
                 EditorGUILayout.BeginHorizontal();
                 EditorGUILayout.PropertyField(lineRenderersProperty.GetArrayElementAtIndex(i));
-                
+
                 bool selectLineRenderer = GUILayout.Button("select", GUILayout.Height(EditorGUIUtility.singleLineHeight));
                 if (selectLineRenderer)
                 {
@@ -199,6 +200,11 @@ namespace neeksdk.Editor {
                 } 
                 
                 EditorGUILayout.EndHorizontal();
+                if (_selectedBezierLine != null && _selectedBezierLine == _myTarget.LineRenderers[i])
+                {
+                    ShowDotGUI(_selectedBezierLine);
+                }
+                EditorGUILayout.EndVertical();
                 EditorGUILayout.Space(1f);
             }
             
@@ -212,12 +218,39 @@ namespace neeksdk.Editor {
             {
                 BezierLine myLine = _myTarget.LineRenderers[deletedLineIndex];
                 _myTarget.LineRenderers.RemoveAt(deletedLineIndex);
+                _selectedBezierLine = null;
+                ActivateAllLines();
                 DestroyImmediate(myLine.gameObject);
+                deletedLineIndex = -1;
             }
             
             _mySerializedObject.Update();
-            //EditorGUILayout.PropertyField(property, true);
             _mySerializedObject.ApplyModifiedProperties();
+        }
+
+        private void ShowDotGUI(BezierLine bezierLine)
+        {
+            for (int index = 0; index < bezierLine.Dots.Count; index++)
+            {
+                EditorGUILayout.BeginHorizontal();
+                IBezierLinePart bezierLinePart = bezierLine.Dots[index];
+                EditorGUILayout.LabelField($"Dot line {index}  ");
+                
+                bool selectDot = GUILayout.Button("select dot", GUILayout.Height(EditorGUIUtility.singleLineHeight));
+                if (selectDot)
+                {
+                    
+                }
+                
+                bool deleteDot = GUILayout.Button("delete dot", GUILayout.Height(EditorGUIUtility.singleLineHeight));
+                if (deleteDot)
+                {
+                    
+                }
+                EditorGUILayout.EndHorizontal();
+            }
+            
+            EditorUtility.SetDirty(_myTarget);
         }
 
         private void SelectBezierLineForEditing(int i)
@@ -274,7 +307,7 @@ namespace neeksdk.Editor {
         private void ModeHandler () {
             switch (_selectedMode) {
                 case Mode.Paint:
-                case Mode.Edit:
+                case Mode.Move:
                 case Mode.Erase:
                     Tools.current = Tool.None;
                     break;
@@ -317,7 +350,7 @@ namespace neeksdk.Editor {
                         Paint(col, row);
                     }
                     break;
-                case Mode.Edit:
+                case Mode.Move:
                     if (Event.current.type == EventType.MouseDown) {
                         Edit(col, row);
                         _originalPosX = col;
@@ -372,7 +405,7 @@ namespace neeksdk.Editor {
                 DestroyImmediate(_myTarget.LineRenderers[pieceNum].gameObject);
             }*/
             
-            InstantiateLinePrefab(col, row);
+            InstantiateDotPrefab(col, row);
         }
     
         private void Edit(int col, int row) {
@@ -502,21 +535,36 @@ namespace neeksdk.Editor {
             EditorUtility.SetDirty(_myTarget);
         }
 
-        private void InstantiateLinePrefab(int col, int row) {
+        private void InstantiateDotPrefab(int col, int row) {
+            if (_selectedBezierLine == null)
+            {
+                //todo: inform user about selection line first
+                return;
+            }
+            
             GameObject go = PrefabUtility.InstantiatePrefab(_pieceSelected) as GameObject;
             if (go == null)
             {
                 return;
             }
             
-            go.transform.parent = _myTarget.transform;
+            go.transform.parent = _selectedBezierLine.transform;
             go.name = $"[{col},{row}][{go.name}]";
             Vector3 tilePosition = _myTarget.GridToWorldCoordinates(col, row);
             go.transform.position = Vector3.zero;
             
-            BezierLine bezierLine = go.GetComponent<BezierLine>();
-            bezierLine.StartPointTransform.position = tilePosition;
-            _myTarget.LineRenderers.Add(bezierLine);
+            IBezierLinePart bezierLineDot = go.GetComponent<IBezierLinePart>();
+            bezierLineDot.SetLinePointPosition(tilePosition);
+            Vector3 lastDotPosition = _selectedBezierLine.StartPointTransform.position;
+            if (_selectedBezierLine.Dots.Count != 0)
+            {
+                int lastDotIndex = _selectedBezierLine.Dots.Count - 1;
+                lastDotPosition = _selectedBezierLine.transform.TransformPoint(_selectedBezierLine.Dots[lastDotIndex].GetLineDotPosition);
+            }
+            
+            Vector3 centerPos = (lastDotPosition + tilePosition) / 2;
+            bezierLineDot.SetBezierControlPointPosition(centerPos);
+            _selectedBezierLine.AddPoint(bezierLineDot);
         }
 
         private void InstantiateNewLinePrefab(int col, int row)

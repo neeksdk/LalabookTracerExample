@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace neeksdk.Scripts.LevelCreator.Lines.Mono
 {
-    public class BezierLinePart : MonoBehaviour
+    public class BezierLinePart : MonoBehaviour, IBezierLinePart
     {
         [SerializeField] private Transform _linePoint;
         [SerializeField] private Transform _bezierControlPoint;
