@@ -8,7 +8,7 @@ namespace neeksdk.Scripts.LevelCreator
     public class StageSettings {
         [SerializeField] public StageClass[] stageTiles = new StageClass[RedactorConstants.REDACTOR_WIDTH*RedactorConstants.REDACTOR_HEIGHT];
 
-        public void PostTile(int num, int tileNum, LinePieceType tileType) {
+        public void PostTile(int num, int tileNum, PointType tileType) {
             StageClass stage = new StageClass {myTileNum = tileNum, myPieceType = tileType};
             stageTiles[num] = stage;
         }
@@ -22,6 +22,6 @@ namespace neeksdk.Scripts.LevelCreator
     [Serializable]
     public class StageClass {
         [SerializeField] public int myTileNum = -1;
-        [SerializeField] public LinePieceType myPieceType = LinePieceType.GizmoPoint;
+        [SerializeField] public PointType myPieceType = PointType.GizmoControlPoint;
     }
 }

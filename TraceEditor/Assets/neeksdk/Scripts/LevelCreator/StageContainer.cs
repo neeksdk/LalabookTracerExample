@@ -4,6 +4,6 @@ namespace neeksdk.Scripts.LevelCreator
 {
     public class StageContainer : MonoBehaviour {
         public GameObject stagePrefab;
-        public LinePieceType _linePieceType;
+        public PointType _pointType;
     }
 }

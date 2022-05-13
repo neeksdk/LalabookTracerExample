@@ -1,14 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
-using neeksdk.Editor;
 using neeksdk.Scripts.Constants;
 using neeksdk.Scripts.LevelCreator;
 using UnityEditor;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-namespace Editor {
+namespace neeksdk.Editor {
     [CustomEditor(typeof(StageConstructor))]
     public class StageConstructorEditorScript : UnityEditor.Editor {
         private StageConstructor _myTarget;
@@ -34,8 +33,8 @@ namespace Editor {
             _myTarget = (StageConstructor) target;
             _mySerializedObject = new SerializedObject(_myTarget);
             
-            if (_myTarget.TilePieces == null || _myTarget.TilePieces.Length == 0) {
-                _myTarget.TilePieces = new LinePiece[RedactorConstants.REDACTOR_WIDTH*RedactorConstants.REDACTOR_HEIGHT];
+            if (_myTarget.LineRenderers == null || _myTarget.LineRenderers.Count == 0) {
+                _myTarget.LineRenderers = new List<LineRenderer>();
             }
             
             SubscribeEvents();
@@ -55,21 +54,23 @@ namespace Editor {
         }
 
         public override void OnInspectorGUI() {
-            DrawGuiControls();
+            DrawLevelGuiControls();
             DrawPieceSelectedGui();
             DrawInspectedItemGui();
+            DrawLineRendersGui();
             
             if (GUI.changed && _myTarget != null) {
                 EditorUtility.SetDirty(_myTarget);
             }
         }
 
-        private void DrawGuiControls() {
+        private void DrawLevelGuiControls() {
             EditorGUILayout.BeginVertical();
             _mySerializedObject.Update();
-            
-            _myTarget.stage = EditorGUILayout.IntField("Stage ID: ", Mathf.Max(1, _myTarget.stage));
-            
+
+            _myTarget.stageName = EditorGUILayout.TextField("Stage name:", string.IsNullOrEmpty(_myTarget.stageName) ? "Stage" : _myTarget.stageName);
+            _myTarget.stageId = EditorGUILayout.IntField("Stage ID: ", Mathf.Max(1, _myTarget.stageId));
+
             EditorGUILayout.BeginHorizontal();
             bool buttonSave =
                 GUILayout.Button("Сохранить", GUILayout.Height(2 * EditorGUIUtility.singleLineHeight));
@@ -93,7 +94,7 @@ namespace Editor {
                     "Вы действительно хотите загрузить уровень?\n Убедитесь, что сохранили свою работу. Это действие нельзя отменить.", "Да",
                     "Нет")) {
                     ClearStage();
-                    LoadStage(_myTarget.stage);
+                    LoadStage(_myTarget.stageId);
                     GUIUtility.ExitGUI();
                 } else {
                     GUIUtility.ExitGUI();  
@@ -125,7 +126,7 @@ namespace Editor {
             EditorGUILayout.EndHorizontal();
             EditorGUILayout.EndVertical();
         }
-        
+
         private void DrawPieceSelectedGui() {
             EditorGUILayout.LabelField("Piece Selected", EditorStyles.boldLabel);
 
@@ -155,7 +156,44 @@ namespace Editor {
                 EditorGUILayout.HelpBox("No piece to edit!", MessageType.Info);
             }
         }
-    
+
+        private void DrawLineRendersGui()
+        {
+            SerializedProperty property = _mySerializedObject.FindProperty("_lineRenderers");
+
+            for (int i = 0; i < property.arraySize; i++)
+            {
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.PropertyField(property.GetArrayElementAtIndex(i));
+                
+                bool selectLineRenderer = GUILayout.Button("select", GUILayout.Height(EditorGUIUtility.singleLineHeight));
+                if (selectLineRenderer)
+                {
+                    
+                } 
+                
+                bool deleteLineRenderer = GUILayout.Button("delete", GUILayout.Height(EditorGUIUtility.singleLineHeight));
+                if (deleteLineRenderer)
+                {
+                    
+                } 
+                
+                EditorGUILayout.EndHorizontal();
+                EditorGUILayout.Space(1f);
+            }
+            
+            bool buttonAdd = GUILayout.Button("add new line", GUILayout.Height(EditorGUIUtility.singleLineHeight));
+            if (buttonAdd)
+            {
+                    
+            }
+            
+            
+            _mySerializedObject.Update();
+            //EditorGUILayout.PropertyField(property, true);
+            _mySerializedObject.ApplyModifiedProperties();
+        }
+
         private void DrawModeGui() {
             List<Mode> modes = EditorUtils.GetListFromEnum<Mode>();
             List<string> modeLabels = new List<string>();
@@ -289,8 +327,8 @@ namespace Editor {
             }
 
             int pieceNum = col + row * RedactorConstants.REDACTOR_WIDTH;
-            if (_myTarget.TilePieces[pieceNum] != null) {
-                DestroyImmediate(_myTarget.TilePieces[pieceNum].gameObject);
+            if (_myTarget.LineRenderers[pieceNum] != null) {
+                DestroyImmediate(_myTarget.LineRenderers[pieceNum].gameObject);
             }
             
             InstantiateLinePrefab(col, row);
@@ -300,11 +338,11 @@ namespace Editor {
             if (!_myTarget.IsInsideGridBounds(col, row)) {
                 _itemInspected = null;
             } else {
-                if (_myTarget.TilePieces[col + row * RedactorConstants.REDACTOR_WIDTH] == null) {
+                if (_myTarget.LineRenderers[col + row * RedactorConstants.REDACTOR_WIDTH] == null) {
                     _itemInspected = null;
                 } else {
                     if (_itemInspected != null) {
-                        _itemInspected = _myTarget.TilePieces[col + row * RedactorConstants.REDACTOR_WIDTH].GetComponent<TraceRedactorItem>() as TraceRedactorItem;
+                        _itemInspected = _myTarget.LineRenderers[col + row * RedactorConstants.REDACTOR_WIDTH].GetComponent<TraceRedactorItem>() as TraceRedactorItem;
                     }
                 }
             }
@@ -318,12 +356,12 @@ namespace Editor {
             if(col == _originalPosX && row == _originalPosY) {
                 return;
             }
-            if(!_myTarget.IsInsideGridBounds(col,row) || _myTarget.TilePieces[col + row * RedactorConstants.REDACTOR_WIDTH] != null) {
+            if(!_myTarget.IsInsideGridBounds(col,row) || _myTarget.LineRenderers[col + row * RedactorConstants.REDACTOR_WIDTH] != null) {
                 _itemInspected.transform.position = _myTarget.GridToWorldCoordinates( _originalPosX, _originalPosY);
             } else {
-                _myTarget.TilePieces[ _originalPosX + _originalPosY * RedactorConstants.REDACTOR_WIDTH] = null;
-                _myTarget.TilePieces[col + row * RedactorConstants.REDACTOR_WIDTH] = _itemInspected.GetComponent<LinePiece>();
-                _myTarget.TilePieces[col + row * RedactorConstants.REDACTOR_WIDTH].transform.position = _myTarget.GridToWorldCoordinates(col,row);
+                _myTarget.LineRenderers[ _originalPosX + _originalPosY * RedactorConstants.REDACTOR_WIDTH] = null;
+                _myTarget.LineRenderers[col + row * RedactorConstants.REDACTOR_WIDTH] = _itemInspected.GetComponent<LineRenderer>();
+                _myTarget.LineRenderers[col + row * RedactorConstants.REDACTOR_WIDTH].transform.position = _myTarget.GridToWorldCoordinates(col,row);
             }
         }
 
@@ -332,36 +370,36 @@ namespace Editor {
                 return;
             }
 
-            LinePiece targetPiece = _myTarget.TilePieces[col + row * RedactorConstants.REDACTOR_WIDTH];
-            if (targetPiece != null) {
-                DestroyImmediate(targetPiece.gameObject);
+            LineRenderer targetPoint = _myTarget.LineRenderers[col + row * RedactorConstants.REDACTOR_WIDTH];
+            if (targetPoint != null) {
+                DestroyImmediate(targetPoint.gameObject);
             }
         }
         
         #endregion
 
         private void ClearStage() {
-            foreach (LinePiece spt in _myTarget.TilePieces) {
+            foreach (LineRenderer spt in _myTarget.LineRenderers) {
                 if (spt != null) {
                     DestroyImmediate(spt.gameObject);
                 }
             }
             
-            _myTarget.TilePieces = new LinePiece[RedactorConstants.REDACTOR_WIDTH*RedactorConstants.REDACTOR_HEIGHT];
+            _myTarget.LineRenderers = new List<LineRenderer>();
         }
 
         private void SaveStage() {
             StageSettings data = new StageSettings();
-            for (int j = 0; j < _myTarget.TilePieces.Length; j++) {
-                if (_myTarget.TilePieces[j] != null) {
-                    LinePiece sp = _myTarget.TilePieces[j].GetComponent<LinePiece>();
-                    data.PostTile(j, sp.tileNum, sp._linePieceType);
+            for (int j = 0; j < _myTarget.LineRenderers.Count; j++) {
+                if (_myTarget.LineRenderers[j] != null) {
+                    LinePoint sp = _myTarget.LineRenderers[j].GetComponent<LinePoint>();
+                    data.PostTile(j, sp.tileNum, sp._pointType);
                 } else {
                     data.PostTile(j);
                 }
             }
         
-            string destination = Application.streamingAssetsPath + $"/StageAssets/Stage_{_myTarget.stage:000}.dat";
+            string destination = Application.streamingAssetsPath + $"/StageAssets/{_myTarget.stageName}_{_myTarget.stageId:000}.dat";
             FileStream file;
 
             if (File.Exists(destination)) {
@@ -389,15 +427,15 @@ namespace Editor {
             FileStream file = File.Open(path, FileMode.Open);
             StageSettings data = (StageSettings) bf.Deserialize(file);
                 
-            List<LinePiece> spl = EditorUtils.GetAssetsWithScript<LinePiece>("Assets/Prefabs/StagePrefabs");
+            List<LinePoint> spl = EditorUtils.GetAssetsWithScript<LinePoint>("Assets/Prefabs/StagePrefabs");
             
             Debug.Log($"Found pieces: {spl.Count}");
                 
             for (int j = 0; j < data.stageTiles.Length; j++) {
                 if (data.stageTiles[j].myTileNum != -1) {
                    
-                    foreach (LinePiece sp in spl) {
-                        if (data.stageTiles[j].myTileNum == sp.tileNum && data.stageTiles[j].myPieceType == sp._linePieceType) {
+                    foreach (LinePoint sp in spl) {
+                        if (data.stageTiles[j].myTileNum == sp.tileNum && data.stageTiles[j].myPieceType == sp._pointType) {
                             GameObject obj = PrefabUtility.InstantiatePrefab(sp.gameObject) as GameObject;
                                 
                             if (obj != null) {
@@ -409,7 +447,7 @@ namespace Editor {
                                 obj.name = $"[{col},{row}][{obj.name}]";
                                 obj.transform.position = _myTarget.GridToWorldCoordinates(col, row);
 
-                                _myTarget.TilePieces[col + row * RedactorConstants.REDACTOR_WIDTH] = obj.GetComponent<LinePiece>();
+                                _myTarget.LineRenderers[col + row * RedactorConstants.REDACTOR_WIDTH] = obj.GetComponent<LineRenderer>();
                             }
 
                             break;
@@ -430,9 +468,9 @@ namespace Editor {
             obj2.transform.parent = _myTarget.transform;
             obj2.name = $"[{col},{row}][{obj2.name}]";
             Vector3 tilePosition = _myTarget.GridToWorldCoordinates(col, row);
-            LinePiece sp = obj2.GetComponent<LinePiece>();
+            LinePoint sp = obj2.GetComponent<LinePoint>();
             obj2.transform.position = tilePosition;
-            _myTarget.TilePieces[col + row * RedactorConstants.REDACTOR_WIDTH] = sp;
+            //_myTarget.LineRenderers[col + row * RedactorConstants.REDACTOR_WIDTH] = sp;
         }
 
         private void CloseStageConstructor() =>

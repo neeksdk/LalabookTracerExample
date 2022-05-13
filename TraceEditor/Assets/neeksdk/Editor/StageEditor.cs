@@ -30,7 +30,7 @@ public class StageEditor : UnityEditor.Editor {
          if (obj != null) {
             obj.name = $"Stage Constructor (stage: {stage})";
             StageConstructor stageConst = obj.GetComponent<StageConstructor>();
-            stageConst.stage = stage;
+            stageConst.stageId = stage;
             stageConst.myStageParent = _myTarget.gameObject;
             PrefabUtility.UnpackPrefabInstance(obj, PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
             Selection.activeGameObject = obj;

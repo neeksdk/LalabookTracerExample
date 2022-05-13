@@ -1,4 +1,5 @@
-﻿using neeksdk.Scripts.Constants;
+﻿using System.Collections.Generic;
+using neeksdk.Scripts.Constants;
 using UnityEngine;
 
 namespace neeksdk.Scripts.LevelCreator
@@ -6,14 +7,15 @@ namespace neeksdk.Scripts.LevelCreator
     public class StageConstructor : MonoBehaviour {
         public bool isHillSelected = false, isHillSelectedRightOriented = false;
 
-        [SerializeField] public int stage;
-        [SerializeField] private LinePiece[] _tilePieces;
+        [SerializeField] public string stageName;
+        [SerializeField] public int stageId;
+        [SerializeField] private List<LineRenderer> _lineRenderers;
 
         [HideInInspector] public GameObject myStageParent;
 
-        public LinePiece[] TilePieces {
-            get => _tilePieces;
-            set => _tilePieces = value;
+        public List<LineRenderer> LineRenderers {
+            get => _lineRenderers;
+            set => _lineRenderers = value;
         }
 
 #if UNITY_EDITOR
