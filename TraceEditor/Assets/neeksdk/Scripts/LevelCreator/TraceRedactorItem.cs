@@ -5,10 +5,11 @@ namespace neeksdk.Scripts.LevelCreator
     public class TraceRedactorItem : MonoBehaviour {
 #if UNITY_EDITOR
         public enum Category {
-            GizmoLines
+            Lines,
+            LineDots
         }
 
-        public Category category = Category.GizmoLines;
+        public Category category = Category.Lines;
         public string itemName = "";
         public Object inspectedScript;
 #endif

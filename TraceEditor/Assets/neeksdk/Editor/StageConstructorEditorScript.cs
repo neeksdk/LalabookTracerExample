@@ -3,6 +3,7 @@ using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using neeksdk.Scripts.Constants;
 using neeksdk.Scripts.LevelCreator;
+using neeksdk.Scripts.LevelCreator.Lines.Mono;
 using UnityEditor;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -34,7 +35,7 @@ namespace neeksdk.Editor {
             _mySerializedObject = new SerializedObject(_myTarget);
             
             if (_myTarget.LineRenderers == null || _myTarget.LineRenderers.Count == 0) {
-                _myTarget.LineRenderers = new List<LineRenderer>();
+                _myTarget.LineRenderers = new List<IBezierLine>();
             }
             
             SubscribeEvents();
@@ -185,7 +186,7 @@ namespace neeksdk.Editor {
             bool buttonAdd = GUILayout.Button("add new line", GUILayout.Height(EditorGUIUtility.singleLineHeight));
             if (buttonAdd)
             {
-                    
+                //_myTarget.LineRenderers.Add();
             }
             
             
@@ -328,7 +329,7 @@ namespace neeksdk.Editor {
 
             int pieceNum = col + row * RedactorConstants.REDACTOR_WIDTH;
             if (_myTarget.LineRenderers[pieceNum] != null) {
-                DestroyImmediate(_myTarget.LineRenderers[pieceNum].gameObject);
+                //DestroyImmediate(_myTarget.LineRenderers[pieceNum].GameObject);
             }
             
             InstantiateLinePrefab(col, row);
@@ -342,7 +343,7 @@ namespace neeksdk.Editor {
                     _itemInspected = null;
                 } else {
                     if (_itemInspected != null) {
-                        _itemInspected = _myTarget.LineRenderers[col + row * RedactorConstants.REDACTOR_WIDTH].GetComponent<TraceRedactorItem>() as TraceRedactorItem;
+                        //_itemInspected = _myTarget.LineRenderers[col + row * RedactorConstants.REDACTOR_WIDTH].GetComponent<TraceRedactorItem>() as TraceRedactorItem;
                     }
                 }
             }
@@ -360,8 +361,8 @@ namespace neeksdk.Editor {
                 _itemInspected.transform.position = _myTarget.GridToWorldCoordinates( _originalPosX, _originalPosY);
             } else {
                 _myTarget.LineRenderers[ _originalPosX + _originalPosY * RedactorConstants.REDACTOR_WIDTH] = null;
-                _myTarget.LineRenderers[col + row * RedactorConstants.REDACTOR_WIDTH] = _itemInspected.GetComponent<LineRenderer>();
-                _myTarget.LineRenderers[col + row * RedactorConstants.REDACTOR_WIDTH].transform.position = _myTarget.GridToWorldCoordinates(col,row);
+                //_myTarget.LineRenderers[col + row * RedactorConstants.REDACTOR_WIDTH] = _itemInspected.GetComponent<LineRenderer>();
+                //_myTarget.LineRenderers[col + row * RedactorConstants.REDACTOR_WIDTH].transform.position = _myTarget.GridToWorldCoordinates(col,row);
             }
         }
 
@@ -370,34 +371,34 @@ namespace neeksdk.Editor {
                 return;
             }
 
-            LineRenderer targetPoint = _myTarget.LineRenderers[col + row * RedactorConstants.REDACTOR_WIDTH];
+            /*LineRenderer targetPoint = _myTarget.LineRenderers[col + row * RedactorConstants.REDACTOR_WIDTH];
             if (targetPoint != null) {
                 DestroyImmediate(targetPoint.gameObject);
-            }
+            }*/
         }
         
         #endregion
 
         private void ClearStage() {
-            foreach (LineRenderer spt in _myTarget.LineRenderers) {
+            /*foreach (LineRenderer spt in _myTarget.LineRenderers) {
                 if (spt != null) {
                     DestroyImmediate(spt.gameObject);
                 }
             }
             
-            _myTarget.LineRenderers = new List<LineRenderer>();
+            _myTarget.LineRenderers = new List<LineRenderer>();*/
         }
 
         private void SaveStage() {
-            StageSettings data = new StageSettings();
-            for (int j = 0; j < _myTarget.LineRenderers.Count; j++) {
+            //StageSettings data = new StageSettings();
+            /*for (int j = 0; j < _myTarget.LineRenderers.Count; j++) {
                 if (_myTarget.LineRenderers[j] != null) {
                     LinePoint sp = _myTarget.LineRenderers[j].GetComponent<LinePoint>();
-                    data.PostTile(j, sp.tileNum, sp._pointType);
+                    data.PostTile(j, sp.tileNum, sp.PointType);
                 } else {
                     data.PostTile(j);
                 }
-            }
+            }*/
         
             string destination = Application.streamingAssetsPath + $"/StageAssets/{_myTarget.stageName}_{_myTarget.stageId:000}.dat";
             FileStream file;
@@ -409,7 +410,7 @@ namespace neeksdk.Editor {
             }
  
             BinaryFormatter bf = new BinaryFormatter();
-            bf.Serialize(file, data);
+            //bf.Serialize(file, data);
             
             file.Close();
 
@@ -425,17 +426,17 @@ namespace neeksdk.Editor {
 
             BinaryFormatter bf = new BinaryFormatter();
             FileStream file = File.Open(path, FileMode.Open);
-            StageSettings data = (StageSettings) bf.Deserialize(file);
+            //StageSettings data = (StageSettings) bf.Deserialize(file);
                 
-            List<LinePoint> spl = EditorUtils.GetAssetsWithScript<LinePoint>("Assets/Prefabs/StagePrefabs");
+            //List<LinePoint> spl = EditorUtils.GetAssetsWithScript<LinePoint>("Assets/Prefabs/StagePrefabs");
             
-            Debug.Log($"Found pieces: {spl.Count}");
+            //Debug.Log($"Found pieces: {spl.Count}");
                 
-            for (int j = 0; j < data.stageTiles.Length; j++) {
+            /*for (int j = 0; j < data.stageTiles.Length; j++) {
                 if (data.stageTiles[j].myTileNum != -1) {
                    
                     foreach (LinePoint sp in spl) {
-                        if (data.stageTiles[j].myTileNum == sp.tileNum && data.stageTiles[j].myPieceType == sp._pointType) {
+                        if (data.stageTiles[j].myTileNum == sp.tileNum && data.stageTiles[j].myPieceType == sp.PointType) {
                             GameObject obj = PrefabUtility.InstantiatePrefab(sp.gameObject) as GameObject;
                                 
                             if (obj != null) {
@@ -454,7 +455,7 @@ namespace neeksdk.Editor {
                         }
                     }
                 }
-            }
+            }*/
             file.Close();
             Resources.UnloadUnusedAssets();
             Repaint();
@@ -468,7 +469,7 @@ namespace neeksdk.Editor {
             obj2.transform.parent = _myTarget.transform;
             obj2.name = $"[{col},{row}][{obj2.name}]";
             Vector3 tilePosition = _myTarget.GridToWorldCoordinates(col, row);
-            LinePoint sp = obj2.GetComponent<LinePoint>();
+            //LinePoint sp = obj2.GetComponent<LinePoint>();
             obj2.transform.position = tilePosition;
             //_myTarget.LineRenderers[col + row * RedactorConstants.REDACTOR_WIDTH] = sp;
         }

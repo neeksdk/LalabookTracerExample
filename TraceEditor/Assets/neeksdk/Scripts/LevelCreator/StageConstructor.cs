@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using neeksdk.Scripts.Constants;
+using neeksdk.Scripts.LevelCreator.Lines.Mono;
 using UnityEngine;
 
 namespace neeksdk.Scripts.LevelCreator
@@ -9,11 +10,11 @@ namespace neeksdk.Scripts.LevelCreator
 
         [SerializeField] public string stageName;
         [SerializeField] public int stageId;
-        [SerializeField] private List<LineRenderer> _lineRenderers;
+        [SerializeField] private List<IBezierLine> _lineRenderers;
 
         [HideInInspector] public GameObject myStageParent;
 
-        public List<LineRenderer> LineRenderers {
+        public List<IBezierLine> LineRenderers {
             get => _lineRenderers;
             set => _lineRenderers = value;
         }

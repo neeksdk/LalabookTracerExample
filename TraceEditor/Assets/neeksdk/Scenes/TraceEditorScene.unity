@@ -133,6 +133,7 @@ GameObject:
   - component: {fileID: 52001876}
   - component: {fileID: 52001875}
   - component: {fileID: 52001874}
+  - component: {fileID: 52001877}
   m_Layer: 0
   m_Name: StartPoint
   m_TagString: Untagged
@@ -235,6 +236,26 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _pointType: 0
   tileNum: 0
+--- !u!114 &52001877
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 52001872}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0552531cfe5946abaf7e72232fe7c5ce, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  linePoint:
+    PointType: 0
+    Position: {x: 0, y: 0, z: 0}
+    isReached: 0
+  bezierPoint:
+    PointType: 0
+    Position: {x: 0, y: 0, z: 0}
+    isReached: 0
 --- !u!1001 &397702016
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -784,10 +805,9 @@ MonoBehaviour:
   isHillSelectedRightOriented: 0
   stageName: Stage
   stageId: 1
-  _lineRenderers:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  _bezierLinePrefab: {fileID: 0}
+  _linePointPrefab: {fileID: 0}
+  _bezierPointPrefab: {fileID: 0}
   myStageParent: {fileID: 0}
 --- !u!4 &1201581027
 Transform:
