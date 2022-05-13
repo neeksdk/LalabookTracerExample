@@ -9,7 +9,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8647973289352591677}
-  - component: {fileID: 8647973289352591676}
+  - component: {fileID: 6365597251174465926}
+  - component: {fileID: 3445723557406248694}
   m_Layer: 0
   m_Name: BezierLinePointsData
   m_TagString: Untagged
@@ -33,7 +34,7 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &8647973289352591676
+--- !u!114 &6365597251174465926
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -42,11 +43,26 @@ MonoBehaviour:
   m_GameObject: {fileID: 8647973289352591679}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0552531cfe5946abaf7e72232fe7c5ce, type: 3}
+  m_Script: {fileID: 11500000, guid: b219a4cf91174d3f97541e158d3ebecd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  linePoint: {fileID: 8647973290090533234}
-  bezierPoint: {fileID: 8647973290229540903}
+  _linePoint: {fileID: 8647973290090533239}
+  _bezierControlPoint: {fileID: 8647973290229540888}
+--- !u!114 &3445723557406248694
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8647973289352591679}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe30eb77c326f194a9f8dcf5186f2713, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  category: 0
+  itemName: Bezier Line Part
+  inspectedScript: {fileID: 6365597251174465926}
 --- !u!1 &8647973290090533238
 GameObject:
   m_ObjectHideFlags: 0
@@ -56,12 +72,11 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8647973290090533239}
-  - component: {fileID: 8647973290090533234}
   - component: {fileID: 8647973290090533237}
   - component: {fileID: 8647973290090533236}
   m_Layer: 0
   m_Name: LinePoint
-  m_TagString: Untagged
+  m_TagString: LinePoint
   m_Icon: {fileID: -5397416234189338067, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -74,26 +89,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8647973290090533238}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 5.49, y: 7.4, z: 0}
+  m_LocalPosition: {x: 0, y: 4, z: 0}
   m_LocalScale: {x: 0.75, y: 0.75, z: 0.75}
   m_Children: []
   m_Father: {fileID: 8647973289352591677}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &8647973290090533234
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8647973290090533238}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe8619d1e06922a46820c457553d6053, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _pointType: 0
-  tileNum: 0
 --- !u!212 &8647973290090533237
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -169,13 +170,12 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8647973290229540888}
-  - component: {fileID: 8647973290229540903}
   - component: {fileID: 8647973290229540902}
   - component: {fileID: 8647973290229540889}
   m_Layer: 0
   m_Name: GizmoControlPoint
-  m_TagString: Untagged
-  m_Icon: {fileID: 7174288486110832750, guid: 0000000000000000d000000000000000, type: 0}
+  m_TagString: LinePoint
+  m_Icon: {fileID: -5442936267250999957, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
@@ -187,26 +187,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8647973290229540891}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 2.1, y: 5.58, z: 0}
+  m_LocalPosition: {x: 0, y: 2, z: 0}
   m_LocalScale: {x: 0.75, y: 0.75, z: 0.75}
   m_Children: []
   m_Father: {fileID: 8647973289352591677}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &8647973290229540903
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8647973290229540891}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe8619d1e06922a46820c457553d6053, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _pointType: 1
-  tileNum: 0
 --- !u!212 &8647973290229540902
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -245,7 +231,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 1
   m_Sprite: {fileID: 21300000, guid: 1291bacee68201c41a44f3c0a788d42a, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0

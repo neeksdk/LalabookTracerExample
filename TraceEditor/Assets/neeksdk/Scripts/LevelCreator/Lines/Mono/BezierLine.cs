@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using neeksdk.Scripts.Extensions;
+using neeksdk.Scripts.LevelCreator.Lines.Data;
 using UnityEngine;
 
 namespace neeksdk.Scripts.LevelCreator.Lines.Mono
@@ -11,8 +12,22 @@ namespace neeksdk.Scripts.LevelCreator.Lines.Mono
         [SerializeField] private Transform _fingerPointer;
         [SerializeField] private int _bezierVertexCount;
 
+        private ILineDot _startLineDot;
         private LineRenderer _lineRenderer;
         private readonly List<BezierLinePart> _lineParts = new List<BezierLinePart>();
+
+        public Transform StartPointTransform => _startLinePoint;
+        
+        public ILineDot GetLineDot()
+        {
+            if (_startLineDot == null)
+            {
+                _startLineDot = new LineDot();
+            }
+            
+            _startLineDot.Position = _startLinePoint.position;
+            return _startLineDot;
+        }
         
         public void AddPoint(BezierLinePart newLinePart)
         {

@@ -1,0 +1,16 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b330f59700eba7f4992f7010d87f308e, type: 3}
+  m_Name: BezierLineConfig
+  m_EditorClassIdentifier: 
+  DefaultBezierLinePrefab: {fileID: 4532107608806923342, guid: ef6af062ed7179c4eafd94c0469a5ec8,
+    type: 3}

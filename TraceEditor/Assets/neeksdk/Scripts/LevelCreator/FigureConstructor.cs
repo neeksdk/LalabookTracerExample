@@ -5,16 +5,14 @@ using UnityEngine;
 
 namespace neeksdk.Scripts.LevelCreator
 {
-    public class StageConstructor : MonoBehaviour {
+    public class FigureConstructor : MonoBehaviour {
         public bool isHillSelected = false, isHillSelectedRightOriented = false;
 
         [SerializeField] public string stageName;
         [SerializeField] public int stageId;
-        [SerializeField] private List<IBezierLine> _lineRenderers;
+        [SerializeField] private List<BezierLine> _lineRenderers;
 
-        [HideInInspector] public GameObject myStageParent;
-
-        public List<IBezierLine> LineRenderers {
+        public List<BezierLine> LineRenderers {
             get => _lineRenderers;
             set => _lineRenderers = value;
         }
@@ -120,7 +118,7 @@ namespace neeksdk.Scripts.LevelCreator
 
         public Vector3 GridToWorldCoordinates(int row, int col) {
             Vector3 pos = transform.position;
-            Vector3 worldPoint = new Vector3((pos.x + row), (pos.y + col), 0);
+            Vector3 worldPoint = new Vector3((pos.x + row + 0.5f), (pos.y + col + 0.5f), 0);
 
             return worldPoint;
         }

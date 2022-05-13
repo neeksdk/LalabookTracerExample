@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
+using neeksdk.Scripts.Configs;
 using neeksdk.Scripts.Constants;
 using neeksdk.Scripts.LevelCreator;
 using neeksdk.Scripts.LevelCreator.Lines.Mono;
@@ -9,16 +10,19 @@ using UnityEngine;
 using Random = UnityEngine.Random;
 
 namespace neeksdk.Editor {
-    [CustomEditor(typeof(StageConstructor))]
-    public class StageConstructorEditorScript : UnityEditor.Editor {
-        private StageConstructor _myTarget;
+    [CustomEditor(typeof(FigureConstructor))]
+    public class FigureConstructorEditorScript : UnityEditor.Editor {
+        private FigureConstructor _myTarget;
         private SerializedObject _mySerializedObject;
         private TraceRedactorItem _itemSelected;
         private TraceRedactorItem _itemInspected;
         private Texture2D _itemPreview;
-        private StageContainer _pieceSelected;
+        private GameObject _pieceSelected;
         private int _originalPosX;
         private int _originalPosY;
+        
+        private BezierLineConfig _bezierLineConfig;
+        private BezierLine _selectedBezierLine;
 
         private enum Mode {
             View,
@@ -30,12 +34,25 @@ namespace neeksdk.Editor {
         private Mode _selectedMode;
         private Mode _currentMode;
 
+        private BezierLineConfig BezierLineConfig
+        {
+            get
+            {
+                if (_bezierLineConfig == null)
+                {
+                    _bezierLineConfig = AssetDatabase.LoadAssetAtPath<BezierLineConfig>(Path.Combine(RedactorConstants.CONFIGS_PATH, RedactorConstants.BEZIER_CONFIG));
+                }
+
+                return _bezierLineConfig;
+            }
+        }
+        
         private void OnEnable() {
-            _myTarget = (StageConstructor) target;
+            _myTarget = (FigureConstructor) target;
             _mySerializedObject = new SerializedObject(_myTarget);
             
-            if (_myTarget.LineRenderers == null || _myTarget.LineRenderers.Count == 0) {
-                _myTarget.LineRenderers = new List<IBezierLine>();
+            if (_myTarget.LineRenderers == null) {
+                _myTarget.LineRenderers = new List<BezierLine>();
             }
             
             SubscribeEvents();
@@ -129,10 +146,10 @@ namespace neeksdk.Editor {
         }
 
         private void DrawPieceSelectedGui() {
-            EditorGUILayout.LabelField("Piece Selected", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("Dot Selected", EditorStyles.boldLabel);
 
             if (_pieceSelected == null) {
-                EditorGUILayout.HelpBox("No piece selected!", MessageType.Info);
+                EditorGUILayout.HelpBox("No dot selected!", MessageType.Info);
             } else {
                 EditorGUILayout.BeginVertical("box");
                 EditorGUILayout.LabelField(new GUIContent(_itemPreview), GUILayout.Height(40));
@@ -154,29 +171,31 @@ namespace neeksdk.Editor {
                 CreateEditor(_itemInspected.inspectedScript).OnInspectorGUI();
                 EditorGUILayout.EndVertical();
             } else {
-                EditorGUILayout.HelpBox("No piece to edit!", MessageType.Info);
+                EditorGUILayout.HelpBox("No dot to move!", MessageType.Info);
             }
         }
 
         private void DrawLineRendersGui()
         {
-            SerializedProperty property = _mySerializedObject.FindProperty("_lineRenderers");
+            SerializedProperty lineRenderersProperty = _mySerializedObject.FindProperty("_lineRenderers");
 
-            for (int i = 0; i < property.arraySize; i++)
+            int deletedLineIndex = -1;
+            
+            for (int i = 0; i < lineRenderersProperty.arraySize; i++)
             {
                 EditorGUILayout.BeginHorizontal();
-                EditorGUILayout.PropertyField(property.GetArrayElementAtIndex(i));
+                EditorGUILayout.PropertyField(lineRenderersProperty.GetArrayElementAtIndex(i));
                 
                 bool selectLineRenderer = GUILayout.Button("select", GUILayout.Height(EditorGUIUtility.singleLineHeight));
                 if (selectLineRenderer)
                 {
-                    
+                    SelectBezierLineForEditing(i);
                 } 
                 
                 bool deleteLineRenderer = GUILayout.Button("delete", GUILayout.Height(EditorGUIUtility.singleLineHeight));
                 if (deleteLineRenderer)
                 {
-                    
+                    deletedLineIndex = i;
                 } 
                 
                 EditorGUILayout.EndHorizontal();
@@ -186,13 +205,34 @@ namespace neeksdk.Editor {
             bool buttonAdd = GUILayout.Button("add new line", GUILayout.Height(EditorGUIUtility.singleLineHeight));
             if (buttonAdd)
             {
-                //_myTarget.LineRenderers.Add();
+                InstantiateNewLinePrefab(0, 0);
             }
-            
+
+            if (deletedLineIndex >= 0)
+            {
+                BezierLine myLine = _myTarget.LineRenderers[deletedLineIndex];
+                _myTarget.LineRenderers.RemoveAt(deletedLineIndex);
+                DestroyImmediate(myLine.gameObject);
+            }
             
             _mySerializedObject.Update();
             //EditorGUILayout.PropertyField(property, true);
             _mySerializedObject.ApplyModifiedProperties();
+        }
+
+        private void SelectBezierLineForEditing(int i)
+        {
+            ActivateAllLines(false);
+            _selectedBezierLine = _myTarget.LineRenderers[i];
+            _selectedBezierLine.gameObject.SetActive(true);
+        }
+
+        private void ActivateAllLines(bool show = true)
+        {
+            foreach (BezierLine lineRenderer in _myTarget.LineRenderers)
+            {
+                lineRenderer.gameObject.SetActive(show);
+            }
         }
 
         private void DrawModeGui() {
@@ -227,7 +267,7 @@ namespace neeksdk.Editor {
         private void UpdateCurrentPieceInstance(TraceRedactorItem item, Texture2D preview) {
             _itemSelected = item;
             _itemPreview = preview;
-            _pieceSelected = item.GetComponent<StageContainer>();
+            _pieceSelected = item.gameObject;
             Repaint();
         }
         
@@ -327,10 +367,10 @@ namespace neeksdk.Editor {
                 return;
             }
 
-            int pieceNum = col + row * RedactorConstants.REDACTOR_WIDTH;
+            /*int pieceNum = col + row * RedactorConstants.REDACTOR_WIDTH;
             if (_myTarget.LineRenderers[pieceNum] != null) {
-                //DestroyImmediate(_myTarget.LineRenderers[pieceNum].GameObject);
-            }
+                DestroyImmediate(_myTarget.LineRenderers[pieceNum].gameObject);
+            }*/
             
             InstantiateLinePrefab(col, row);
         }
@@ -463,15 +503,38 @@ namespace neeksdk.Editor {
         }
 
         private void InstantiateLinePrefab(int col, int row) {
-            GameObject obj2 = PrefabUtility.InstantiatePrefab(_pieceSelected.stagePrefab) as GameObject;
-            if (obj2 == null) return;
+            GameObject go = PrefabUtility.InstantiatePrefab(_pieceSelected) as GameObject;
+            if (go == null)
+            {
+                return;
+            }
             
-            obj2.transform.parent = _myTarget.transform;
-            obj2.name = $"[{col},{row}][{obj2.name}]";
+            go.transform.parent = _myTarget.transform;
+            go.name = $"[{col},{row}][{go.name}]";
             Vector3 tilePosition = _myTarget.GridToWorldCoordinates(col, row);
-            //LinePoint sp = obj2.GetComponent<LinePoint>();
-            obj2.transform.position = tilePosition;
-            //_myTarget.LineRenderers[col + row * RedactorConstants.REDACTOR_WIDTH] = sp;
+            go.transform.position = Vector3.zero;
+            
+            BezierLine bezierLine = go.GetComponent<BezierLine>();
+            bezierLine.StartPointTransform.position = tilePosition;
+            _myTarget.LineRenderers.Add(bezierLine);
+        }
+
+        private void InstantiateNewLinePrefab(int col, int row)
+        {
+            GameObject go = PrefabUtility.InstantiatePrefab(BezierLineConfig.DefaultBezierLinePrefab.gameObject) as GameObject;
+            if (go == null)
+            {
+                return;
+            }
+            
+            go.transform.parent = _myTarget.transform;
+            go.name = $"[{col},{row}][{go.name}]";
+            Vector3 tilePosition = _myTarget.GridToWorldCoordinates(col, row);
+            go.transform.position = Vector3.zero;
+            
+            BezierLine bezierLine = go.GetComponent<BezierLine>();
+            bezierLine.StartPointTransform.position = tilePosition;
+            _myTarget.LineRenderers.Add(bezierLine);
         }
 
         private void CloseStageConstructor() =>

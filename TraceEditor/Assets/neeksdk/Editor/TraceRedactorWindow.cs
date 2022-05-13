@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using neeksdk.Scripts.Constants;
 using neeksdk.Scripts.LevelCreator;
 using UnityEditor;
 using UnityEngine;
@@ -12,7 +13,7 @@ namespace neeksdk.Editor
         private List<TraceRedactorItem.Category> _categories;
         private List<string> _categoryLabels;
         private TraceRedactorItem.Category _categorySelected;
-        private string _path = "Assets/Prefabs/StagePieces";
+        private string _path = RedactorConstants.PREFABS_PATH;
         private List<TraceRedactorItem> _items;
         private Dictionary<TraceRedactorItem.Category, List<TraceRedactorItem>> _categorizedItems;
         private Dictionary<TraceRedactorItem, Texture2D> _previews;

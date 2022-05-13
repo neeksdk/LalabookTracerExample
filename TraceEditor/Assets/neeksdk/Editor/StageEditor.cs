@@ -21,17 +21,16 @@ public class StageEditor : UnityEditor.Editor {
          GUILayout.Button("Открыть редактор уровня", GUILayout.Height(2 * EditorGUIUtility.singleLineHeight));
 
       if (editStageButton) {
-         List<StageConstructor> lsc = EditorUtils.GetAssetsWithScript<StageConstructor>("Assets/Prefabs/StageConstructor");
-         StageConstructor myStageConstructor = lsc[0];
+         List<FigureConstructor> lsc = EditorUtils.GetAssetsWithScript<FigureConstructor>("Assets/Prefabs/StageConstructor");
+         FigureConstructor myFigureConstructor = lsc[0];
          
-         GameObject obj = PrefabUtility.InstantiatePrefab(myStageConstructor.gameObject) as GameObject;
+         GameObject obj = PrefabUtility.InstantiatePrefab(myFigureConstructor.gameObject) as GameObject;
          int stage = _myTarget.myStageInfo;
 
          if (obj != null) {
             obj.name = $"Stage Constructor (stage: {stage})";
-            StageConstructor stageConst = obj.GetComponent<StageConstructor>();
-            stageConst.stageId = stage;
-            stageConst.myStageParent = _myTarget.gameObject;
+            FigureConstructor figureConst = obj.GetComponent<FigureConstructor>();
+            figureConst.stageId = stage;
             PrefabUtility.UnpackPrefabInstance(obj, PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
             Selection.activeGameObject = obj;
          }
