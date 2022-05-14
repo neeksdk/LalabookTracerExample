@@ -7,5 +7,8 @@ namespace neeksdk.Scripts.Constants
         public const string PREFABS_PATH = "Assets/neeksdk/Prefabs/";
         public const string CONFIGS_PATH = "Assets/neeksdk/Configs/";
         public const string BEZIER_CONFIG = "BezierLineConfig.asset";
+
+        public const float FINGER_WRONG_RADIUS = 0.5f;
+        public const float VECTOR_COMPARISON_TOLERANCE = 0.001f;
     }
 }
