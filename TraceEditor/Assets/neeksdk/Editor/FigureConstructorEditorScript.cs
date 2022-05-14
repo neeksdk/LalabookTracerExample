@@ -196,7 +196,7 @@ namespace neeksdk.Editor {
                     SelectBezierLineForEditing(i);
                 } 
                 
-                bool deleteLineRenderer = GUILayout.Button("delete", GUILayout.Height(EditorGUIUtility.singleLineHeight));
+                bool deleteLineRenderer = GUILayout.Button("delete", GetRedGuyStile(), GUILayout.Height(EditorGUIUtility.singleLineHeight));
                 if (deleteLineRenderer)
                 {
                     deletedLineIndex = i;
@@ -246,7 +246,7 @@ namespace neeksdk.Editor {
                     //todo: add dot selection to editor
                 }
                 
-                bool deleteDot = GUILayout.Button("delete dot", GUILayout.Height(EditorGUIUtility.singleLineHeight));
+                bool deleteDot = GUILayout.Button("delete dot", GetRedGuyStile(), GUILayout.Height(EditorGUIUtility.singleLineHeight));
                 if (deleteDot)
                 {
                     deletedIndex = index;
@@ -597,6 +597,15 @@ namespace neeksdk.Editor {
             bezierLine.StartPointTransform.position = tilePosition;
             _myTarget.LineRenderers.Add(bezierLine);
         }
+
+        private GUIStyle GetRedGuyStile()
+        {
+            GUIStyle buttonStyle = new GUIStyle(GUI.skin.button);
+            buttonStyle.normal.textColor = new Color(1f, 0.48f, 0.53f);
+            buttonStyle.fontStyle = FontStyle.Bold;
+            return buttonStyle;
+        }
+        
 
         private void CloseStageConstructor() =>
             SceneView.lastActiveSceneView.FrameSelected();
