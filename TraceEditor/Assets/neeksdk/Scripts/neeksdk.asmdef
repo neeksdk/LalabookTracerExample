@@ -1,7 +1,8 @@
 {
     "name": "neeksdk",
     "references": [
-        "GUID:6055be8ebefd69e48b49212b09b47b2f"
+        "GUID:6055be8ebefd69e48b49212b09b47b2f",
+        "GUID:fa7c2b581167fb24ea89412bd2c0001b"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
