@@ -7,6 +7,7 @@ using neeksdk.Scripts.Extensions;
 using neeksdk.Scripts.LevelCreator;
 using neeksdk.Scripts.LevelCreator.Lines.Mono;
 using neeksdk.Scripts.Properties;
+using neeksdk.Scripts.StaticData.LinesData;
 using UnityEditor;
 using UnityEngine;
 
@@ -31,8 +32,7 @@ namespace neeksdk.Editor {
         private enum FigureConstructorModes {
             View,
             Paint,
-            Move,
-            Erase
+            Move
         }
 
         private FigureConstructorModes _selectedFigureConstructorModes;
@@ -51,7 +51,8 @@ namespace neeksdk.Editor {
             }
         }
         
-        private void OnEnable() {
+        private void OnEnable()
+        {
             _myTarget = (FigureConstructor) target;
             _mySerializedObject = new SerializedObject(_myTarget);
             
@@ -88,21 +89,26 @@ namespace neeksdk.Editor {
         }
 
         private void DrawLevelGuiControls() {
+            if (_myTarget.LineRenderers.Count == 0)
+            {
+                return;
+            }
+            
             EditorGUILayout.BeginVertical();
             _mySerializedObject.Update();
 
-            _myTarget.stageName = EditorGUILayout.TextField("Stage name:", string.IsNullOrEmpty(_myTarget.stageName) ? "Stage" : _myTarget.stageName);
-            _myTarget.stageId = EditorGUILayout.IntField("Stage ID: ", Mathf.Max(1, _myTarget.stageId));
+            _myTarget.figureName = EditorGUILayout.TextField("Figure name:", string.IsNullOrEmpty(_myTarget.figureName) ? "Stage" : _myTarget.figureName);
+            _myTarget.figureId = EditorGUILayout.IntField("Figure ID: ", Mathf.Max(1, _myTarget.figureId));
 
             EditorGUILayout.BeginHorizontal();
             bool buttonSave =
-                GUILayout.Button("Сохранить", GUILayout.Height(2 * EditorGUIUtility.singleLineHeight));
+                GUILayout.Button("Save", GUILayout.Height(2 * EditorGUIUtility.singleLineHeight));
 
             if (buttonSave) {
-                if (EditorUtility.DisplayDialog("Инструмент сохранения уровня",
-                    "Вы действительно хотите сохранить текущий уровень?", "Да",
-                    "Нет")) {
-                    SaveStage();
+                if (EditorUtility.DisplayDialog("Save figure",
+                    "Do you really want to save this figure?", "Yes",
+                    "No")) {
+                    SaveFigure();
                     GUIUtility.ExitGUI();
                 } else {
                     GUIUtility.ExitGUI();  
@@ -110,14 +116,14 @@ namespace neeksdk.Editor {
             } 
         
             bool buttonLoad =
-                GUILayout.Button("Загрузить", GUILayout.Height(2 * EditorGUIUtility.singleLineHeight));
+                GUILayout.Button("Load", GUILayout.Height(2 * EditorGUIUtility.singleLineHeight));
 
             if (buttonLoad) {
-                if (EditorUtility.DisplayDialog("Инструмент загрузки уровня",
-                    "Вы действительно хотите загрузить уровень?\n Убедитесь, что сохранили свою работу. Это действие нельзя отменить.", "Да",
-                    "Нет")) {
-                    ClearStage();
-                    LoadStage(_myTarget.stageId);
+                if (EditorUtility.DisplayDialog("Loading figure",
+                    "Do you really want to load a figure?\n Make sure you save your work. This action can't be cancelled.", "Yes",
+                    "No")) {
+                    ClearFigure();
+                    LoadStage(_myTarget.figureId);
                     GUIUtility.ExitGUI();
                 } else {
                     GUIUtility.ExitGUI();  
@@ -128,24 +134,16 @@ namespace neeksdk.Editor {
                 GUILayout.Button("Очистить", GUILayout.Height(2 * EditorGUIUtility.singleLineHeight));
 
             if (buttonClear) {
-                if (EditorUtility.DisplayDialog("Инструмент очистки уровня",
-                    "Вы действительно хотите очистить уровень и удалить все объекты?\n Это действие нельзя отменить.", "Да",
-                    "Нет")) {
-                    ClearStage();
+                if (EditorUtility.DisplayDialog("Figure clearing",
+                    "Do you really want to clean up current figure?\n This action can't be cancelled.", "Yes",
+                    "No")) {
+                    ClearFigure();
                     GUIUtility.ExitGUI();
                 } else {
                     GUIUtility.ExitGUI();
                 }
-            } 
-        
-            bool buttonClose =
-                GUILayout.Button("Закрыть", GUILayout.Height(2 * EditorGUIUtility.singleLineHeight));
-
-            if (buttonClose) {
-                CloseStageConstructor();
-                GUIUtility.ExitGUI();
             }
-        
+
             EditorGUILayout.EndHorizontal();
             EditorGUILayout.EndVertical();
         }
@@ -232,14 +230,17 @@ namespace neeksdk.Editor {
                 EditorGUILayout.EndVertical();
                 EditorGUILayout.Space(1f);
             }
-            
-            bool buttonShowAllLines = GUILayout.Button("Show all lines", GUILayout.Height(EditorGUIUtility.singleLineHeight));
-            if (buttonShowAllLines)
+
+            if (_selectedBezierLine != null)
             {
-                ActivateAllLines();
-                _selectedBezierLine = null;
+                bool buttonShowAllLines = GUILayout.Button("Show all lines", GUILayout.Height(2 * EditorGUIUtility.singleLineHeight));
+                if (buttonShowAllLines)
+                {
+                    ActivateAllLines();
+                    _selectedBezierLine = null;
+                }
             }
-            
+
             bool buttonAdd = GUILayout.Button("Add new line", GUILayout.Height(EditorGUIUtility.singleLineHeight));
             if (buttonAdd)
             {
@@ -273,12 +274,14 @@ namespace neeksdk.Editor {
                 if (selectDot)
                 {
                     selectedIndex = index;
+                    GUIUtility.ExitGUI();
                 }
                 
                 bool deleteDot = GUILayout.Button("delete dot", GetRedGuyStile(), GUILayout.Height(EditorGUIUtility.singleLineHeight));
                 if (deleteDot)
                 {
                     deletedIndex = index;
+                    GUIUtility.ExitGUI();
                 }
                 EditorGUILayout.EndHorizontal();
             }
@@ -305,7 +308,7 @@ namespace neeksdk.Editor {
         {
             ActivateAllLines(false);
             _selectedBezierLine = _myTarget.LineRenderers[i];
-            _selectedBezierLine.gameObject.SetActive(true);
+            _selectedBezierLine.gameObject.SetActive(true); 
         }
 
         private void ActivateAllLines(bool show = true)
@@ -356,7 +359,6 @@ namespace neeksdk.Editor {
             switch (_selectedFigureConstructorModes) {
                 case FigureConstructorModes.Paint:
                 case FigureConstructorModes.Move:
-                case FigureConstructorModes.Erase:
                     Tools.current = Tool.None;
                     break;
                 case FigureConstructorModes.View:
@@ -400,11 +402,6 @@ namespace neeksdk.Editor {
                 case FigureConstructorModes.Move:
                         MoveDots();
                     break;
-                case FigureConstructorModes.Erase:
-                    if(Event.current.type == EventType.MouseDown) {
-                        EraseTile(col, row);
-                    }
-                    break;
                 case FigureConstructorModes.View:
                 default:
                     break;
@@ -413,7 +410,7 @@ namespace neeksdk.Editor {
         
         #endregion
 
-        #region Draw Tile Methods
+        #region Draw Dot Methods
 
         private void Paint(int col, int row) {
             if (!GridExtensions.IsInsideGridBounds(col,row) || _pieceSelected == null) {
@@ -505,20 +502,9 @@ namespace neeksdk.Editor {
             EditorUtility.SetDirty(_myTarget);
         }
 
-        private void EraseTile(int col, int row) {
-            if (!GridExtensions.IsInsideGridBounds(col, row)) {
-                return;
-            }
-
-            /*LineRenderer targetPoint = _myTarget.LineRenderers[col + row * RedactorConstants.REDACTOR_WIDTH];
-            if (targetPoint != null) {
-                DestroyImmediate(targetPoint.gameObject);
-            }*/
-        }
-        
         #endregion
 
-        private void ClearStage() {
+        private void ClearFigure() {
             foreach (BezierLine bezierLine in _myTarget.LineRenderers) {
                 if (bezierLine != null) {
                     DestroyImmediate(bezierLine.gameObject);
@@ -528,18 +514,29 @@ namespace neeksdk.Editor {
             _myTarget.LineRenderers.Clear();
         }
 
-        private void SaveStage() {
-            //StageSettings data = new StageSettings();
-            /*for (int j = 0; j < _myTarget.LineRenderers.Count; j++) {
-                if (_myTarget.LineRenderers[j] != null) {
-                    LinePoint sp = _myTarget.LineRenderers[j].GetComponent<LinePoint>();
-                    data.PostTile(j, sp.tileNum, sp.PointType);
-                } else {
-                    data.PostTile(j);
+        private void SaveFigure()
+        {
+            BezierFigureData bezierFigureData = new BezierFigureData();
+            for (int i = 0; i < _myTarget.LineRenderers.Count; i++)
+            {
+                BezierLine bezierLine = _myTarget.LineRenderers[i];
+                if (bezierLine != null)
+                {
+                    int dotsCount = bezierLine.Dots.Count;
+                    BezierDotsData dotsData = new BezierDotsData();
+                    dotsData.LineDots = new SerializedVectorData[dotsCount];
+                    dotsData.BezierControlDots = new SerializedVectorData[dotsCount];
+                    bezierFigureData.FirstDot = bezierLine.StartPointTransform.position.ToSerializedVector();
+                    for (int j = 0; j < dotsCount; j++)
+                    {
+                        IBezierLinePart linePart = bezierLine.Dots[j];
+                        dotsData.LineDots[j] = linePart.GetLineDotPosition.ToSerializedVector();
+                        dotsData.BezierControlDots[j] = linePart.GetBezierControlDotPosition.ToSerializedVector();
+                    }
                 }
-            }*/
-        
-            string destination = Application.streamingAssetsPath + $"/StageAssets/{_myTarget.stageName}_{_myTarget.stageId:000}.dat";
+            }
+
+            string destination = EditorUtility.OpenFilePanel("Select file to save", Path.Combine(Application.streamingAssetsPath, "FigureAssets"), "dat");
             FileStream file;
 
             if (File.Exists(destination)) {
@@ -549,15 +546,15 @@ namespace neeksdk.Editor {
             }
  
             BinaryFormatter bf = new BinaryFormatter();
-            //bf.Serialize(file, data);
-            
+            bf.Serialize(file, bezierFigureData);
             file.Close();
-
-            CloseStageConstructor();
         }
 
         private void LoadStage(int stage) {
-            string path = Application.streamingAssetsPath + $"/StageAssets/Stage_{stage:000}.dat";
+            
+            
+            
+            string path = Application.streamingAssetsPath + $"/FigureAssets/Stage_{stage:0000}.dat";
             
             Debug.Log($"stage: {stage}, exists: {File.Exists(path)}");
             
@@ -574,7 +571,6 @@ namespace neeksdk.Editor {
         private void InstantiateDotPrefab(int col, int row) {
             if (_selectedBezierLine == null)
             {
-                //todo: inform user about selection line first
                 return;
             }
             
@@ -628,10 +624,6 @@ namespace neeksdk.Editor {
             buttonStyle.fontStyle = FontStyle.Bold;
             return buttonStyle;
         }
-        
-
-        private void CloseStageConstructor() =>
-            SceneView.lastActiveSceneView.FrameSelected();
 
         private bool RaycastSceneObjects(out RaycastHit hit)
         {

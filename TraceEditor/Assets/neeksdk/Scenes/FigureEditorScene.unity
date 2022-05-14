@@ -235,8 +235,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   isHillSelected: 0
   isHillSelectedRightOriented: 0
-  stageName: Stage
-  stageId: 1
+  figureName: Stage
+  figureId: 1
   _lineRenderers: []
 --- !u!4 &1201581027
 Transform:
