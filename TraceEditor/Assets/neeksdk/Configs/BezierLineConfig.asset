@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   DefaultBezierLinePrefab: {fileID: 4532107608806923342, guid: ef6af062ed7179c4eafd94c0469a5ec8,
     type: 3}
-  BezierLinePartPrefab: {fileID: 6365597251174465926, guid: 8c2fab3bb01e3ee41acdc658a9d8a3da,
+  DefaultBezierLinePartPrefab: {fileID: 6365597251174465926, guid: 8c2fab3bb01e3ee41acdc658a9d8a3da,
     type: 3}

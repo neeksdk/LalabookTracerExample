@@ -7,5 +7,6 @@ namespace neeksdk.Scripts.Configs
     public class BezierLineConfig : ScriptableObject
     {
         public BezierLine DefaultBezierLinePrefab;
+        public BezierLinePart DefaultBezierLinePartPrefab;
     }
 }

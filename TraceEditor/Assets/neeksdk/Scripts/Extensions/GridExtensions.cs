@@ -6,6 +6,9 @@ namespace neeksdk.Scripts.Extensions
     public static class GridExtensions
     {
         public static Vector3 WorldToGridVectorCoordinates(this Vector3 point) =>
+            new Vector3((int)point.x, (int)point.y, 0);
+        
+        public static Vector3 WorldToGridVectorCoordinatesCentered(this Vector3 point) =>
             new Vector3((int)point.x + 0.5f, (int)point.y + 0.5f, 0);
         
         public static (int row, int col) WorldToGridCoordinates(this Vector3 point) =>
