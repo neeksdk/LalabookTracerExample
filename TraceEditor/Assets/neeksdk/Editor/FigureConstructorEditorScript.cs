@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Runtime.Serialization.Formatters.Binary;
 using neeksdk.Scripts.Extensions;
 using neeksdk.Scripts.Infrastructure.Factory;
+using neeksdk.Scripts.Infrastructure.SaveLoad;
 using neeksdk.Scripts.LevelCreator;
 using neeksdk.Scripts.LevelCreator.Lines.Mono;
 using neeksdk.Scripts.Properties;
@@ -517,70 +516,34 @@ namespace neeksdk.Editor {
             _myTarget.LineRenderers.Clear();
         }
 
-        private void SaveFigure()
-        {
-            BezierFigureData bezierFigureData = new BezierFigureData();
-            for (int i = 0; i < _myTarget.LineRenderers.Count; i++)
-            {
-                BezierLine bezierLine = _myTarget.LineRenderers[i];
-                if (bezierLine != null)
-                {
-                    int dotsCount = bezierLine.Dots.Count;
-                    BezierDotsData dotsData = new BezierDotsData();
-                    dotsData.LineDots = new SerializedVectorData[dotsCount];
-                    dotsData.BezierControlDots = new SerializedVectorData[dotsCount];
-                    dotsData.FirstDot = bezierLine.StartPointTransform.position.ToSerializedVector();
-                    for (int j = 0; j < dotsCount; j++)
-                    {
-                        IBezierLinePart linePart = bezierLine.Dots[j];
-                        dotsData.LineDots[j] = linePart.GetLineDotPosition.ToSerializedVector();
-                        dotsData.BezierControlDots[j] = linePart.GetBezierControlDotPosition.ToSerializedVector();
-                    }
-                    bezierFigureData.BezierLinesData.Add(dotsData);
-                }
-            }
-
-            string destination = EditorUtility.OpenFilePanel("Select file to save", Path.Combine(Application.streamingAssetsPath, "FigureAssets"), "dat");
-            FileStream file;
-
-            if (File.Exists(destination)) {
-                file = File.OpenWrite(destination);
-            } else {
-                file = File.Create(destination);
-            }
- 
-            BinaryFormatter bf = new BinaryFormatter();
-            bf.Serialize(file, bezierFigureData);
-            file.Close();
-        }
+        private void SaveFigure() => SaveLoadDataClass.SaveFigureWithDialog(_myTarget.LineRenderers);
 
         private void LoadFigure() {
-            string loadPath = EditorUtility.OpenFilePanel("Select file to load from", Path.Combine(Application.streamingAssetsPath, "FigureAssets"), "dat");
-            BinaryFormatter bf = new BinaryFormatter();
-            FileStream file = File.Open(loadPath, FileMode.Open);
-            ClearFigure();
-            _currentFigureConstructorModes = FigureConstructorModes.Paint;
-            if (bf.Deserialize(file) is BezierFigureData figureData)
+            if (!SaveLoadDataClass.TryLoadFigureWithDialog(out BezierFigureData bezierFigureData))
             {
-                for (int index = 0; index < figureData.BezierLinesData.Count; index++)
-                {
-                    BezierDotsData lineData = figureData.BezierLinesData[index];
-                    BezierLine newLinePrefab = BezierLineFactory.InstantiateNewLinePrefab(lineData.FirstDot.FromSerializedVector().WorldToGridCoordinates(), _myTarget.transform);
-                    _myTarget.LineRenderers.Add(newLinePrefab);
-                    _selectedBezierLine = _myTarget.LineRenderers[index];
-                    for (int i = 0; i < lineData.LineDots.Count(); i++)
-                    {
-                        Vector3 dotPos = lineData.LineDots[i].FromSerializedVector();
-                        Vector3 bezierControlDotPos = lineData.BezierControlDots[i].FromSerializedVector();
-                        (int row, int col) coords = dotPos.WorldToGridCoordinates();
-                        BezierLineFactory.InstantiateDotPrefab(coords, _pieceSelected, _selectedBezierLine,  _myTarget.transform.GridToWorldCoordinates(coords.col, coords.row));
-                        _selectedBezierLine.Dots[i].SetBezierControlPointPosition(bezierControlDotPos);
-                    }
-                }
+                return;
             }
             
+            ClearFigure();
+            _currentFigureConstructorModes = FigureConstructorModes.Paint;
+            
+            for (int index = 0; index < bezierFigureData.BezierLinesData.Count; index++)
+            {
+                BezierDotsData lineData = bezierFigureData.BezierLinesData[index];
+                BezierLine newLinePrefab = BezierLineFactory.InstantiateNewLinePrefab(lineData.FirstDot.FromSerializedVector().WorldToGridCoordinates(), _myTarget.transform);
+                _myTarget.LineRenderers.Add(newLinePrefab);
+                _selectedBezierLine = _myTarget.LineRenderers[index];
+                for (int i = 0; i < lineData.LineDots.Count(); i++)
+                {
+                    Vector3 dotPos = lineData.LineDots[i].FromSerializedVector();
+                    Vector3 bezierControlDotPos = lineData.BezierControlDots[i].FromSerializedVector();
+                    (int row, int col) coords = dotPos.WorldToGridCoordinates();
+                    BezierLineFactory.InstantiateDotPrefab(coords, _pieceSelected, _selectedBezierLine,  _myTarget.transform.GridToWorldCoordinates(coords.col, coords.row));
+                    _selectedBezierLine.Dots[i].SetBezierControlPointPosition(bezierControlDotPos);
+                }
+            }   
+                
             _currentFigureConstructorModes = FigureConstructorModes.View;
-            file.Close();
             Resources.UnloadUnusedAssets();
             Repaint();
             EditorUtility.SetDirty(_myTarget);
