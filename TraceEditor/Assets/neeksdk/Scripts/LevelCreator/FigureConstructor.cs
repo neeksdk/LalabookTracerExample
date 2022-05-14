@@ -31,7 +31,7 @@ namespace neeksdk.Scripts.LevelCreator
         private void GridSelectionGizmo() {
             Vector3 mousePosition = UnityEditor.HandleUtility.GUIPointToWorldRay(Event.current.mousePosition).origin;
             mousePosition.z = 0;
-            Vector3 gridPos = mousePosition.WorldToGridCoordinates();
+            Vector3 gridPos = mousePosition.WorldToGridVectorCoordinates();
 
             int col = Mathf.FloorToInt(gridPos.x);
             int row = Mathf.FloorToInt(gridPos.y);

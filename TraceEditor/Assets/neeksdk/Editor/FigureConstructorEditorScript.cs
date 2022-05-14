@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using neeksdk.Scripts.Configs;
 using neeksdk.Scripts.Constants;
@@ -89,11 +90,6 @@ namespace neeksdk.Editor {
         }
 
         private void DrawLevelGuiControls() {
-            if (_myTarget.LineRenderers.Count == 0)
-            {
-                return;
-            }
-            
             EditorGUILayout.BeginVertical();
             _mySerializedObject.Update();
 
@@ -123,7 +119,7 @@ namespace neeksdk.Editor {
                     "Do you really want to load a figure?\n Make sure you save your work. This action can't be cancelled.", "Yes",
                     "No")) {
                     ClearFigure();
-                    LoadStage(_myTarget.figureId);
+                    LoadFigure(_myTarget.figureId);
                     GUIUtility.ExitGUI();
                 } else {
                     GUIUtility.ExitGUI();  
@@ -244,7 +240,7 @@ namespace neeksdk.Editor {
             bool buttonAdd = GUILayout.Button("Add new line", GUILayout.Height(EditorGUIUtility.singleLineHeight));
             if (buttonAdd)
             {
-                InstantiateNewLinePrefab(0, 0);
+                InstantiateNewLinePrefab((0, 0));
             }
 
             if (deletedLineIndex >= 0)
@@ -389,7 +385,7 @@ namespace neeksdk.Editor {
             Vector3 mousePosition = HandleUtility.GUIPointToWorldRay(Event.current.mousePosition).origin;
             mousePosition.z = 0;
         
-            Vector3 gridPos = mousePosition.WorldToGridCoordinates();
+            Vector3 gridPos = mousePosition.WorldToGridVectorCoordinates();
             int col = (int) gridPos.x;
             int row = (int) gridPos.y;
 
@@ -417,7 +413,7 @@ namespace neeksdk.Editor {
                 return;
             }
             
-            InstantiateDotPrefab(col, row);
+            InstantiateDotPrefab((col, row));
         }
         
         private void MoveDots()
@@ -496,7 +492,7 @@ namespace neeksdk.Editor {
             Vector3 mousePosition = HandleUtility.GUIPointToWorldRay(Event.current.mousePosition).origin;
             mousePosition.z = 0;
             _selectedBezierDot.position = mousePosition.IsInsideGridBounds()
-                ? mousePosition.WorldToGridCoordinates()
+                ? mousePosition.WorldToGridVectorCoordinates()
                 : _dotPositionBeforeDrag;
             _selectedBezierLine.UpdateLineWithFingerPoint();
             EditorUtility.SetDirty(_myTarget);
@@ -526,13 +522,14 @@ namespace neeksdk.Editor {
                     BezierDotsData dotsData = new BezierDotsData();
                     dotsData.LineDots = new SerializedVectorData[dotsCount];
                     dotsData.BezierControlDots = new SerializedVectorData[dotsCount];
-                    bezierFigureData.FirstDot = bezierLine.StartPointTransform.position.ToSerializedVector();
+                    dotsData.FirstDot = bezierLine.StartPointTransform.position.ToSerializedVector();
                     for (int j = 0; j < dotsCount; j++)
                     {
                         IBezierLinePart linePart = bezierLine.Dots[j];
                         dotsData.LineDots[j] = linePart.GetLineDotPosition.ToSerializedVector();
                         dotsData.BezierControlDots[j] = linePart.GetBezierControlDotPosition.ToSerializedVector();
                     }
+                    bezierFigureData.BezierLinesData.Add(dotsData);
                 }
             }
 
@@ -550,25 +547,36 @@ namespace neeksdk.Editor {
             file.Close();
         }
 
-        private void LoadStage(int stage) {
-            
-            
-            
-            string path = Application.streamingAssetsPath + $"/FigureAssets/Stage_{stage:0000}.dat";
-            
-            Debug.Log($"stage: {stage}, exists: {File.Exists(path)}");
-            
-            if (!File.Exists(path)) return;
-
+        private void LoadFigure(int stage) {
+            string loadPath = EditorUtility.OpenFilePanel("Select file to load from", Path.Combine(Application.streamingAssetsPath, "FigureAssets"), "dat");
             BinaryFormatter bf = new BinaryFormatter();
-            FileStream file = File.Open(path, FileMode.Open);
+            FileStream file = File.Open(loadPath, FileMode.Open);
+            ClearFigure();
+            _currentFigureConstructorModes = FigureConstructorModes.Paint;
+            if (bf.Deserialize(file) is BezierFigureData figureData)
+            {
+                for (int index = 0; index < figureData.BezierLinesData.Count; index++)
+                {
+                    BezierDotsData lineData = figureData.BezierLinesData[index];
+                    InstantiateNewLinePrefab(lineData.FirstDot.FromSerializedVector().WorldToGridCoordinates());
+                    _selectedBezierLine = _myTarget.LineRenderers[index];
+                    for (int i = 0; i < lineData.LineDots.Count(); i++)
+                    {
+                        Vector3 dotPos = lineData.LineDots[i].FromSerializedVector();
+                        Vector3 bezierControlDotPos = lineData.BezierControlDots[i].FromSerializedVector();
+                        InstantiateDotPrefab(dotPos.WorldToGridCoordinates());
+                        _selectedBezierLine.Dots[i].SetBezierControlPointPosition(bezierControlDotPos);
+                    }
+                }
+            }
+            _currentFigureConstructorModes = FigureConstructorModes.View;
             file.Close();
             Resources.UnloadUnusedAssets();
             Repaint();
             EditorUtility.SetDirty(_myTarget);
         }
 
-        private void InstantiateDotPrefab(int col, int row) {
+        private void InstantiateDotPrefab((int col, int row) coords) {
             if (_selectedBezierLine == null)
             {
                 return;
@@ -581,8 +589,8 @@ namespace neeksdk.Editor {
             }
             
             go.transform.parent = _selectedBezierLine.transform;
-            go.name = $"[{col},{row}][{go.name}]";
-            Vector3 tilePosition = _myTarget.transform.GridToWorldCoordinates(col, row);
+            go.name = $"[{coords.col},{coords.row}][{go.name}]";
+            Vector3 tilePosition = _myTarget.transform.GridToWorldCoordinates(coords.col, coords.row);
             go.transform.position = Vector3.zero;
             
             IBezierLinePart bezierLineDot = go.GetComponent<IBezierLinePart>();
@@ -599,7 +607,7 @@ namespace neeksdk.Editor {
             _selectedBezierLine.AddPoint(bezierLineDot);
         }
 
-        private void InstantiateNewLinePrefab(int col, int row)
+        private void InstantiateNewLinePrefab((int col, int row) coords)
         {
             GameObject go = PrefabUtility.InstantiatePrefab(BezierLineConfig.DefaultBezierLinePrefab.gameObject) as GameObject;
             if (go == null)
@@ -608,8 +616,8 @@ namespace neeksdk.Editor {
             }
             
             go.transform.parent = _myTarget.transform;
-            go.name = $"[{col},{row}][{go.name}]";
-            Vector3 tilePosition = _myTarget.transform.GridToWorldCoordinates(col, row);
+            go.name = $"[{coords.col},{coords.row}][{go.name}]";
+            Vector3 tilePosition = _myTarget.transform.GridToWorldCoordinates(coords.col, coords.row);
             go.transform.position = Vector3.zero;
             
             BezierLine bezierLine = go.GetComponent<BezierLine>();

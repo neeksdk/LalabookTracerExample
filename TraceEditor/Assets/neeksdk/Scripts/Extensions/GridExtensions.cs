@@ -5,8 +5,11 @@ namespace neeksdk.Scripts.Extensions
 {
     public static class GridExtensions
     {
-        public static Vector3 WorldToGridCoordinates(this Vector3 point) =>
+        public static Vector3 WorldToGridVectorCoordinates(this Vector3 point) =>
             new Vector3((int)point.x + 0.5f, (int)point.y + 0.5f, 0);
+        
+        public static (int row, int col) WorldToGridCoordinates(this Vector3 point) =>
+            ((int)point.x, (int)point.y);
         
         public static Vector3 GridToWorldCoordinates(this Transform transform, int row, int col) {
             Vector3 pos = transform.position;
