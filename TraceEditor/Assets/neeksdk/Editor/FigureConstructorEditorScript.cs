@@ -1,15 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using neeksdk.Scripts.Configs;
 using neeksdk.Scripts.Constants;
+using neeksdk.Scripts.Extensions;
 using neeksdk.Scripts.LevelCreator;
 using neeksdk.Scripts.LevelCreator.Lines.Mono;
 using neeksdk.Scripts.Properties;
 using UnityEditor;
 using UnityEngine;
-using Random = UnityEngine.Random;
 
 namespace neeksdk.Editor {
     [CustomEditor(typeof(FigureConstructor))]
@@ -17,7 +16,7 @@ namespace neeksdk.Editor {
         private FigureConstructor _myTarget;
         private SerializedObject _mySerializedObject;
         private TraceRedactorItem _itemSelected;
-        private TraceRedactorItem _itemInspected;
+        private GameObject _itemInspected;
         private Texture2D _itemPreview;
         private GameObject _pieceSelected;
         private int _originalPosX;
@@ -26,16 +25,18 @@ namespace neeksdk.Editor {
         private BezierLineConfig _bezierLineConfig;
         private BezierLine _selectedBezierLine;
         private Transform _selectedBezierDot;
+        private bool _bezierDotLocked;
+        private Vector3 _dotPositionBeforeDrag;
 
-        private enum Mode {
+        private enum FigureConstructorModes {
             View,
             Paint,
             Move,
             Erase
         }
 
-        private Mode _selectedMode;
-        private Mode _currentMode;
+        private FigureConstructorModes _selectedFigureConstructorModes;
+        private FigureConstructorModes _currentFigureConstructorModes;
 
         private BezierLineConfig BezierLineConfig
         {
@@ -71,13 +72,13 @@ namespace neeksdk.Editor {
             DrawModeGui();
             ModeHandler();
             EventHandler();
-            DetectDots();
             if (Event.current.type == EventType.MouseMove) SceneView.RepaintAll();
         }
 
         public override void OnInspectorGUI() {
             DrawLevelGuiControls();
-            DrawPieceSelectedGui();
+            DrawLineSelectedGui();
+            DrawDotSelectedGui();
             DrawInspectedItemGui();
             DrawLineRendersGui();
             
@@ -149,7 +150,28 @@ namespace neeksdk.Editor {
             EditorGUILayout.EndVertical();
         }
 
-        private void DrawPieceSelectedGui() {
+        private void DrawLineSelectedGui()
+        {
+            EditorGUILayout.LabelField("Line Selected", EditorStyles.boldLabel);
+            if (_selectedBezierLine == null)
+            {
+                EditorGUILayout.HelpBox("Line not selected!", MessageType.Info);
+            }
+            else
+            {
+                EditorGUILayout.BeginVertical("box");
+                EditorGUILayout.LabelField(new GUIContent(AssetPreview.GetAssetPreview(_selectedBezierLine.gameObject)), GUILayout.Height(40));
+                EditorGUILayout.LabelField(_selectedBezierLine.name);
+                EditorGUILayout.EndVertical();
+            }
+        }
+
+        private void DrawDotSelectedGui() {
+            if (_itemSelected == null || _currentFigureConstructorModes == FigureConstructorModes.Move)
+            {
+                return;
+            }
+            
             EditorGUILayout.LabelField("Dot Selected", EditorStyles.boldLabel);
 
             if (_pieceSelected == null) {
@@ -163,7 +185,7 @@ namespace neeksdk.Editor {
         }
 
         private void DrawInspectedItemGui() {
-            if(_currentMode != Mode.Move) {
+            if(_currentFigureConstructorModes != FigureConstructorModes.Move) {
                 return;
             }
             
@@ -171,7 +193,7 @@ namespace neeksdk.Editor {
             if (_itemInspected != null) {
                 EditorGUILayout.BeginVertical("box");
                 EditorGUILayout.LabelField("Name: " + _itemInspected.name);
-                CreateEditor(_itemInspected.inspectedScript).OnInspectorGUI();
+                CreateEditor(_itemInspected).OnInspectorGUI();
                 EditorGUILayout.EndVertical();
             } else {
                 EditorGUILayout.HelpBox("No dot to move!", MessageType.Info);
@@ -211,7 +233,14 @@ namespace neeksdk.Editor {
                 EditorGUILayout.Space(1f);
             }
             
-            bool buttonAdd = GUILayout.Button("add new line", GUILayout.Height(EditorGUIUtility.singleLineHeight));
+            bool buttonShowAllLines = GUILayout.Button("Show all lines", GUILayout.Height(EditorGUIUtility.singleLineHeight));
+            if (buttonShowAllLines)
+            {
+                ActivateAllLines();
+                _selectedBezierLine = null;
+            }
+            
+            bool buttonAdd = GUILayout.Button("Add new line", GUILayout.Height(EditorGUIUtility.singleLineHeight));
             if (buttonAdd)
             {
                 InstantiateNewLinePrefab(0, 0);
@@ -234,16 +263,16 @@ namespace neeksdk.Editor {
         private void ShowDotGUI(BezierLine bezierLine)
         {
             int deletedIndex = -1;
+            int selectedIndex = -1;
             for (int index = 0; index < bezierLine.Dots.Count; index++)
             {
                 EditorGUILayout.BeginHorizontal();
-                IBezierLinePart bezierLinePart = bezierLine.Dots[index];
                 EditorGUILayout.LabelField($"Dot line {index}  ");
                 
                 bool selectDot = GUILayout.Button("select dot", GUILayout.Height(EditorGUIUtility.singleLineHeight));
                 if (selectDot)
                 {
-                    //todo: add dot selection to editor
+                    selectedIndex = index;
                 }
                 
                 bool deleteDot = GUILayout.Button("delete dot", GetRedGuyStile(), GUILayout.Height(EditorGUIUtility.singleLineHeight));
@@ -254,10 +283,17 @@ namespace neeksdk.Editor {
                 EditorGUILayout.EndHorizontal();
             }
 
+            if (selectedIndex >= 0)
+            {
+                bezierLine.ChangeDotColors(ColorTypes.Normal);
+                bezierLine.Dots[selectedIndex].ApplyColor(ColorTypes.Selected);
+                selectedIndex = -1;
+            }
+            
             if (deletedIndex >= 0)
             {
-                IBezierLinePart deletedDot = _selectedBezierLine.Dots[deletedIndex];
-                _selectedBezierLine.DeletePoint(deletedIndex);
+                IBezierLinePart deletedDot = bezierLine.Dots[deletedIndex];
+                bezierLine.DeletePoint(deletedIndex);
                 DestroyImmediate(deletedDot.GameObject);
                 deletedIndex = -1;
             }
@@ -281,16 +317,16 @@ namespace neeksdk.Editor {
         }
 
         private void DrawModeGui() {
-            List<Mode> modes = EditorUtils.GetListFromEnum<Mode>();
+            List<FigureConstructorModes> modes = EditorUtils.GetListFromEnum<FigureConstructorModes>();
             List<string> modeLabels = new List<string>();
-            foreach(Mode mode in modes) {
+            foreach(FigureConstructorModes mode in modes) {
                 modeLabels.Add(mode.ToString());
             }
         
             Handles.BeginGUI();
             GUILayout.BeginArea(new Rect(10f, 10f, 300, 30f));
-            _selectedMode = (Mode) GUILayout.Toolbar(
-                (int) _currentMode,
+            _selectedFigureConstructorModes = (FigureConstructorModes) GUILayout.Toolbar(
+                (int) _currentFigureConstructorModes,
                 modeLabels.ToArray(),
                 GUILayout.ExpandHeight(true));
             GUILayout.EndArea();
@@ -317,27 +353,28 @@ namespace neeksdk.Editor {
         }
         
         private void ModeHandler () {
-            switch (_selectedMode) {
-                case Mode.Paint:
-                case Mode.Move:
-                case Mode.Erase:
+            switch (_selectedFigureConstructorModes) {
+                case FigureConstructorModes.Paint:
+                case FigureConstructorModes.Move:
+                case FigureConstructorModes.Erase:
                     Tools.current = Tool.None;
                     break;
-                case Mode.View:
+                case FigureConstructorModes.View:
                 default:
                     Tools.current = Tool.View;
                     break;
             }
         
-            if(_selectedMode != _currentMode) {
-                _currentMode = _selectedMode;
+            if(_selectedFigureConstructorModes != _currentFigureConstructorModes) {
+                _currentFigureConstructorModes = _selectedFigureConstructorModes;
                 _itemInspected = null;
+                _bezierDotLocked = false;
                 Repaint();
             }
 
             _myTarget.isHillSelected = false;
             
-            if (_currentMode == Mode.Paint) {
+            if (_currentFigureConstructorModes == FigureConstructorModes.Paint) {
                 Tools.current = Tool.None;
             }
         
@@ -350,45 +387,25 @@ namespace neeksdk.Editor {
             Vector3 mousePosition = HandleUtility.GUIPointToWorldRay(Event.current.mousePosition).origin;
             mousePosition.z = 0;
         
-            Vector3 gridPos = _myTarget.WorldToGridCoordinates(mousePosition);
+            Vector3 gridPos = mousePosition.WorldToGridCoordinates();
             int col = (int) gridPos.x;
             int row = (int) gridPos.y;
-            //Debug.LogFormat("GridPos {0},{1}", col, row);
-        
-            switch(_currentMode) {
-                case Mode.Paint:
-                    if(Event.current.type == EventType.MouseDown ||
-                       Event.current.type == EventType.MouseDrag) {
+
+            switch(_currentFigureConstructorModes) {
+                case FigureConstructorModes.Paint:
+                    if(Event.current.type == EventType.MouseDown) {
                         Paint(col, row);
                     }
                     break;
-                case Mode.Move:
-                    if (Event.current.type == EventType.MouseDown) {
-                        Edit(col, row);
-                        _originalPosX = col;
-                        _originalPosY = row;
-                    }
-
-                    if (Event.current.type == EventType.MouseUp || Event.current.type == EventType.Ignore) {
-                        if (_itemInspected != null) {
-                            MoveTile();
-                        }
-                    }
-
-                    if (_itemInspected != null) {
-                        Transform iit = _itemInspected.transform;
-                        iit.position = Handles.FreeMoveHandle(iit.position,
-                            iit.rotation, 0.5f, 0.5f * Vector3.one, Handles.RectangleHandleCap);
-                    }
+                case FigureConstructorModes.Move:
+                        MoveDots();
                     break;
-                case Mode.Erase:
-                    if(Event.current.type == EventType.MouseDown ||
-                       Event.current.type == EventType.MouseDrag) {
+                case FigureConstructorModes.Erase:
+                    if(Event.current.type == EventType.MouseDown) {
                         EraseTile(col, row);
                     }
                     break;
-                case Mode.View:
-                    break;
+                case FigureConstructorModes.View:
                 default:
                     break;
             }
@@ -398,62 +415,98 @@ namespace neeksdk.Editor {
 
         #region Draw Tile Methods
 
-        private static int RandomizeNums(int cNum, int lRange, int rRange) {
-            int randomNum = Random.Range(lRange, rRange);
-            while (cNum == randomNum) {
-                randomNum = Random.Range(lRange, rRange);
-            }
-            
-            return randomNum;
-        }
-
         private void Paint(int col, int row) {
-            if (!_myTarget.IsInsideGridBounds(col,row) || _pieceSelected == null) {
+            if (!GridExtensions.IsInsideGridBounds(col,row) || _pieceSelected == null) {
                 return;
             }
-
-            /*int pieceNum = col + row * RedactorConstants.REDACTOR_WIDTH;
-            if (_myTarget.LineRenderers[pieceNum] != null) {
-                DestroyImmediate(_myTarget.LineRenderers[pieceNum].gameObject);
-            }*/
             
             InstantiateDotPrefab(col, row);
         }
-    
-        private void Edit(int col, int row) {
-            if (!_myTarget.IsInsideGridBounds(col, row)) {
-                _itemInspected = null;
-            } else {
-                if (_myTarget.LineRenderers[col + row * RedactorConstants.REDACTOR_WIDTH] == null) {
-                    _itemInspected = null;
-                } else {
-                    if (_itemInspected != null) {
-                        //_itemInspected = _myTarget.LineRenderers[col + row * RedactorConstants.REDACTOR_WIDTH].GetComponent<TraceRedactorItem>() as TraceRedactorItem;
+        
+        private void MoveDots()
+        {
+            if (_currentFigureConstructorModes != FigureConstructorModes.Move)
+            {
+                return;
+            }
+
+            if (_bezierDotLocked)
+            {
+                CheckMouseDrag();
+                return;
+            }
+
+            if (RaycastSceneObjects(out RaycastHit raycastHit))
+            {
+                Collider collider = raycastHit.collider;
+                if (collider.tag.Equals("LinePoint"))
+                {
+                    if (_selectedBezierDot != collider.transform)
+                    {
+                        _selectedBezierDot = collider.transform;
+                        collider.GetComponent<SprColorChanger>()?.ApplyColor(ColorTypes.Selected);
+                        _dotPositionBeforeDrag = collider.transform.position;
+                        CheckMouseDrag();
+                    }
+                    else
+                    {
+                        CheckMouseDrag();
                     }
                 }
             }
-            Repaint();
+            else
+            {
+                foreach (BezierLine bezierLine in _myTarget.LineRenderers)
+                {
+                    bezierLine.ChangeDotColors(ColorTypes.Normal);
+                }
+
+                _selectedBezierDot = null;
+            }
         }
 
-        private void MoveTile() {
-            
-            Vector3 gridPoint = _myTarget.WorldToGridCoordinates(_itemInspected.transform.position);
-            int col = (int) gridPoint.x;
-            int row = (int) gridPoint.y;
-            if(col == _originalPosX && row == _originalPosY) {
-                return;
+        private void CheckMouseDrag()
+        {
+            switch (Event.current.type)
+            {
+                case EventType.MouseDown:
+                    _bezierDotLocked = true;
+                    _itemInspected = _selectedBezierDot.gameObject;
+                    EditorUtility.SetDirty(_myTarget);
+                    break;
+                case EventType.MouseUp:
+                    _bezierDotLocked = false;
+                    _itemInspected = null;
+                    CorrectDotPositionAfterDrag();
+                    break;
+                case EventType.MouseMove:
+                case EventType.MouseDrag:
+                    if (_bezierDotLocked)
+                    {
+                        Vector3 mousePosition = HandleUtility.GUIPointToWorldRay(Event.current.mousePosition).origin;
+                        mousePosition.z = 0;
+                        _selectedBezierDot.transform.position = mousePosition;
+                        _selectedBezierLine.UpdateLineWithFingerPoint();
+                    }
+                    break;
+                default:
+                    break;
             }
-            if(!_myTarget.IsInsideGridBounds(col,row) || _myTarget.LineRenderers[col + row * RedactorConstants.REDACTOR_WIDTH] != null) {
-                _itemInspected.transform.position = _myTarget.GridToWorldCoordinates( _originalPosX, _originalPosY);
-            } else {
-                _myTarget.LineRenderers[ _originalPosX + _originalPosY * RedactorConstants.REDACTOR_WIDTH] = null;
-                //_myTarget.LineRenderers[col + row * RedactorConstants.REDACTOR_WIDTH] = _itemInspected.GetComponent<LineRenderer>();
-                //_myTarget.LineRenderers[col + row * RedactorConstants.REDACTOR_WIDTH].transform.position = _myTarget.GridToWorldCoordinates(col,row);
-            }
+        }
+
+        private void CorrectDotPositionAfterDrag()
+        {
+            Vector3 mousePosition = HandleUtility.GUIPointToWorldRay(Event.current.mousePosition).origin;
+            mousePosition.z = 0;
+            _selectedBezierDot.position = mousePosition.IsInsideGridBounds()
+                ? mousePosition.WorldToGridCoordinates()
+                : _dotPositionBeforeDrag;
+            _selectedBezierLine.UpdateLineWithFingerPoint();
+            EditorUtility.SetDirty(_myTarget);
         }
 
         private void EraseTile(int col, int row) {
-            if (!_myTarget.IsInsideGridBounds(col, row)) {
+            if (!GridExtensions.IsInsideGridBounds(col, row)) {
                 return;
             }
 
@@ -466,13 +519,13 @@ namespace neeksdk.Editor {
         #endregion
 
         private void ClearStage() {
-            /*foreach (LineRenderer spt in _myTarget.LineRenderers) {
-                if (spt != null) {
-                    DestroyImmediate(spt.gameObject);
+            foreach (BezierLine bezierLine in _myTarget.LineRenderers) {
+                if (bezierLine != null) {
+                    DestroyImmediate(bezierLine.gameObject);
                 }
             }
             
-            _myTarget.LineRenderers = new List<LineRenderer>();*/
+            _myTarget.LineRenderers.Clear();
         }
 
         private void SaveStage() {
@@ -512,36 +565,6 @@ namespace neeksdk.Editor {
 
             BinaryFormatter bf = new BinaryFormatter();
             FileStream file = File.Open(path, FileMode.Open);
-            //StageSettings data = (StageSettings) bf.Deserialize(file);
-                
-            //List<LinePoint> spl = EditorUtils.GetAssetsWithScript<LinePoint>("Assets/Prefabs/StagePrefabs");
-            
-            //Debug.Log($"Found pieces: {spl.Count}");
-                
-            /*for (int j = 0; j < data.stageTiles.Length; j++) {
-                if (data.stageTiles[j].myTileNum != -1) {
-                   
-                    foreach (LinePoint sp in spl) {
-                        if (data.stageTiles[j].myTileNum == sp.tileNum && data.stageTiles[j].myPieceType == sp.PointType) {
-                            GameObject obj = PrefabUtility.InstantiatePrefab(sp.gameObject) as GameObject;
-                                
-                            if (obj != null) {
-                                obj.transform.parent = _myTarget.transform;
-
-                                int row = Mathf.FloorToInt(j / (float)RedactorConstants.REDACTOR_WIDTH);
-                                int col = j - row * RedactorConstants.REDACTOR_WIDTH;
-
-                                obj.name = $"[{col},{row}][{obj.name}]";
-                                obj.transform.position = _myTarget.GridToWorldCoordinates(col, row);
-
-                                _myTarget.LineRenderers[col + row * RedactorConstants.REDACTOR_WIDTH] = obj.GetComponent<LineRenderer>();
-                            }
-
-                            break;
-                        }
-                    }
-                }
-            }*/
             file.Close();
             Resources.UnloadUnusedAssets();
             Repaint();
@@ -563,7 +586,7 @@ namespace neeksdk.Editor {
             
             go.transform.parent = _selectedBezierLine.transform;
             go.name = $"[{col},{row}][{go.name}]";
-            Vector3 tilePosition = _myTarget.GridToWorldCoordinates(col, row);
+            Vector3 tilePosition = _myTarget.transform.GridToWorldCoordinates(col, row);
             go.transform.position = Vector3.zero;
             
             IBezierLinePart bezierLineDot = go.GetComponent<IBezierLinePart>();
@@ -590,7 +613,7 @@ namespace neeksdk.Editor {
             
             go.transform.parent = _myTarget.transform;
             go.name = $"[{col},{row}][{go.name}]";
-            Vector3 tilePosition = _myTarget.GridToWorldCoordinates(col, row);
+            Vector3 tilePosition = _myTarget.transform.GridToWorldCoordinates(col, row);
             go.transform.position = Vector3.zero;
             
             BezierLine bezierLine = go.GetComponent<BezierLine>();
@@ -609,34 +632,6 @@ namespace neeksdk.Editor {
 
         private void CloseStageConstructor() =>
             SceneView.lastActiveSceneView.FrameSelected();
-
-        
-        private void DetectDots()
-        {
-            if (_currentMode != Mode.Move)
-            {
-                return;
-            }
-
-            if (RaycastSceneObjects(out RaycastHit raycastHit))
-            {
-                Collider collider = raycastHit.collider;
-                if (collider.tag.Equals("LinePoint") && _selectedBezierDot != collider.transform)
-                {
-                    _selectedBezierDot = collider.transform;
-                    collider.GetComponent<SprColorChanger>()?.ApplyColor(ColorTypes.Selected);
-                }
-            }
-            else
-            {
-                foreach (BezierLine bezierLine in _myTarget.LineRenderers)
-                {
-                    bezierLine.ChangeDotColors(ColorTypes.Normal);
-                }
-
-                _selectedBezierDot = null;
-            }
-        }
 
         private bool RaycastSceneObjects(out RaycastHit hit)
         {
