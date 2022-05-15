@@ -1,13 +1,13 @@
 namespace neeksdk.Scripts.Infrastructure.StateMachine
 {
-    public class LoadLevelState : IPayloadedState<string>
+    public class GameState : IState
     {
-        public LoadLevelState()
+        public GameState()
         {
             
         }
-
-        public void Enter(string levelPath)
+        
+        public void Enter()
         {
             
         }

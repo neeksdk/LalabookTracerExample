@@ -18,11 +18,19 @@ namespace neeksdk.Scripts.Infrastructure
                 return;
             }
 
+            if (Instance == null)
+            {
+                InitializeBootstrapper();
+            }
+        }
+
+        private void InitializeBootstrapper()
+        {
             Instance = this;
             DontDestroyOnLoad(this);
             
             _game = new GameController();
-            //_game.StateMachine.Enter<LoadLevelState>();
+            _game.StateMachine.Enter<MainMenuState>();
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]

@@ -1,4 +1,5 @@
-﻿using neeksdk.Scripts.LevelCreator.Lines.Mono;
+﻿using neeksdk.Scripts.FigureTracer;
+using neeksdk.Scripts.LevelCreator.Lines.Mono;
 using UnityEngine;
 
 namespace neeksdk.Scripts.Configs
@@ -8,5 +9,6 @@ namespace neeksdk.Scripts.Configs
     {
         public BezierLine DefaultBezierLinePrefab;
         public BezierLinePart DefaultBezierLinePartPrefab;
+        public FingerPointer FingerPointerPrefab;
     }
 }

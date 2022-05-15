@@ -16,3 +16,5 @@ MonoBehaviour:
     type: 3}
   DefaultBezierLinePartPrefab: {fileID: 6365597251174465926, guid: 8c2fab3bb01e3ee41acdc658a9d8a3da,
     type: 3}
+  FingerPointerPrefab: {fileID: 6178262828114048335, guid: 30eb3d743993e4b4bb8346135c337fc3,
+    type: 3}

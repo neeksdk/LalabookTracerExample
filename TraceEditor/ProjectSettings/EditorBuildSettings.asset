@@ -6,9 +6,9 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/neeksdk/Scenes/TestScene.unity
-    guid: 5d7c183a18103ba47839703dc0a645bb
-  - enabled: 1
     path: Assets/neeksdk/Scenes/MainMenuScene.unity
     guid: 311a93c7e3724a14a9c187a196bc05a9
+  - enabled: 1
+    path: Assets/neeksdk/Scenes/TestScene.unity
+    guid: 5d7c183a18103ba47839703dc0a645bb
   m_configObjects: {}
