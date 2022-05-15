@@ -8,13 +8,21 @@ namespace neeksdk.Scripts.Infrastructure
     public class GameBootstrapper : MonoBehaviour
     {
         private GameController _game;
+        public static GameBootstrapper Instance = null;
 
-        private void Awake()
+        private void Start()
         {
+            if (Instance == this)
+            {
+                Destroy(gameObject);
+                return;
+            }
+
+            Instance = this;
+            DontDestroyOnLoad(this);
+            
             _game = new GameController();
             //_game.StateMachine.Enter<LoadLevelState>();
-
-            DontDestroyOnLoad(this);
         }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]

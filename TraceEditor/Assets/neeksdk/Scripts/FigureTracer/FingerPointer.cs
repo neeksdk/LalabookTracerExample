@@ -1,6 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
+using DG.Tweening;
 using neeksdk.Scripts.Constants;
 using neeksdk.Scripts.Extensions;
+using neeksdk.Scripts.StaticData.LinesData;
+using RSG;
 using UnityEngine;
 
 namespace neeksdk.Scripts.FigureTracer
@@ -9,121 +13,128 @@ namespace neeksdk.Scripts.FigureTracer
     {
         [SerializeField] private LineRenderer _path;
         [SerializeField] private LineRenderer _pathReached;
-        [SerializeField] private Transform _transform;
-        [SerializeField] private Transform _fingerPointTransform;
+        [SerializeField] private Transform _fingerPointerTransform;
+        [SerializeField] private Transform _fingerPointerArtTransform;
+        [SerializeField] private DragHelper _dragHelper;
 
         private Vector3 _nextPointPosition;
+        private Vector3 _fingerPointerInitialScale;
         private int _nextPointIndex;
-        private Vector3 _previousMousePosition;
-        private bool _isDragging;
-        private bool _destinationReached;
+        private Camera _camera;
+
+        private const float SCALE_ANIMATION_DURATION = 1f;
+        private const float DRAW_LINE_DURATION = 0.025f;
 
         public Action<FingerPointer> OnDestinationReached;
-        
-        private void OnEnable()
-        {
-            SetToStartPosition();
-        }
+        public Action OnFingerOutOfPointer;
 
-        private void SetToStartPosition()
+        public void SetupFingerPointer(Camera mainCamera)
         {
             if (_path.positionCount < 2)
             {
                 return;
             }
-            
+
+            _camera = mainCamera;
             _pathReached.positionCount = 1;
+            
             Vector3 startPosition = _path.GetPosition(0);
             _pathReached.positionCount = 2;
             _pathReached.SetPosition(0, startPosition);
             _pathReached.SetPosition(1, startPosition);
-            _transform.position = startPosition;
+            _fingerPointerTransform.position = startPosition;
             _nextPointIndex = 1;
             _nextPointPosition = _path.GetPosition(_nextPointIndex);
-            _fingerPointTransform.LookAtZAxis(_nextPointPosition);
+            _fingerPointerArtTransform.LookAtZAxis(_nextPointPosition);
         }
 
-        private void OnMouseUp()
+        public void BeginDrag() =>
+            _fingerPointerTransform.DOScale(_fingerPointerInitialScale, SCALE_ANIMATION_DURATION).SetEase(Ease.OutCirc).OnComplete(EnableDragging);
+
+        public IPromise PopulateBezierLineData(BezierDotsData dotsData, bool withAnimation = true)
         {
-            if (_destinationReached)
+            _path.positionCount = 1;
+            Vector3 previousPosition = dotsData.FirstDot.FromSerializedVector();
+            _path.SetPosition(0, previousPosition);
+
+            List<Func<IPromise>> promises = new List<Func<IPromise>>();
+
+            for (int i = 0; i < dotsData.LineDots.Length; i++)
             {
-                return;
+                Vector3 dotPosition = dotsData.LineDots[i].FromSerializedVector();
+                int index = i;
+                Vector3 from = previousPosition;
+                Func<IPromise> nextLineDrawPromise = new Func<IPromise>(() =>
+                {
+                    Promise promise = new Promise();
+                    _path.positionCount = index + 2;
+                    Vector3 nextDotPosition = dotsData.LineDots[index].FromSerializedVector();
+                    float distance = Vector3.Distance(from, nextDotPosition);
+                    
+                    DOVirtual.Float(0, distance, DRAW_LINE_DURATION, lerpDist =>
+                    {
+                        _path.SetPosition(index + 1, Vector3.MoveTowards(from, nextDotPosition, lerpDist));
+                    }).SetEase(Ease.Linear).OnComplete(() => promise.Resolve());
+                    return promise;
+                });
+
+                promises.Add(nextLineDrawPromise);
+                previousPosition = dotPosition;
             }
-            
-            Debug.Log(" --- mouse up");
-            _isDragging = false;
+
+            return Promise.Sequence(promises);
         }
 
-        private void OnMouseDown()
+        private void Awake()
         {
-            if (_destinationReached)
-            {
-                return;
-            }
-            
-            Debug.Log(" --- mouse down");
-            _isDragging = true;
-            _previousMousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            //_previousMousePosition.z = -20;
+            _fingerPointerInitialScale = _fingerPointerTransform.localScale;
+            _fingerPointerTransform.localScale = Vector3.zero;
         }
 
-        private void OnMouseDrag()
+        private void FingerOutOfPointer() => OnFingerOutOfPointer?.Invoke();
+
+        private void EnableDragging()
         {
-            if (!_isDragging || _destinationReached)
+            _dragHelper.StartDragDetection(true);
+            _dragHelper.OnDrag += MoveFingerPointer;
+            _dragHelper.OnFingerOutOfPointer += FingerOutOfPointer;
+        }
+        
+        private void DisableDragDetection()
+        {
+            _dragHelper.StartDragDetection(false);
+            _dragHelper.OnDrag -= MoveFingerPointer;
+            _dragHelper.OnFingerOutOfPointer -= FingerOutOfPointer;
+        }
+        
+        private void MoveFingerPointer()
+        {
+            Vector3 mousePosition = _camera.GetMousePosition();
+            Vector3 startPoint = _path.GetPosition(_nextPointIndex - 1);
+            Vector3 endPoint = _nextPointPosition;
+
+            Vector3 nextFingerPointerPosition = mousePosition.DistanceAlongMousePosition(startPoint, endPoint);
+            float distanceToMouseAlongPath = Vector3.Distance(nextFingerPointerPosition, endPoint);
+            float distanceFromFingerPointer = Vector3.Distance(_fingerPointerTransform.position, endPoint);
+            if (distanceToMouseAlongPath < distanceFromFingerPointer)
             {
-                return;
+                _fingerPointerTransform.position = nextFingerPointerPosition;
             }
             
-            Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            Vector3 previousMousePosition = _previousMousePosition;
-            _previousMousePosition = mousePosition;
-            mousePosition.z = 0;
-            Debug.Log($" --- mouse pos: {mousePosition}");
-            Debug.Log($" --- previous mouse pos: {previousMousePosition}");
-
-            bool mouseOutsideAllowedRadius = Vector3.Distance(mousePosition, _transform.position) > RedactorConstants.FINGER_WRONG_RADIUS;
-
-            if (mouseOutsideAllowedRadius)
-            {
-                _isDragging = false;
-                Debug.Log(" --- out of area");
-                return;
-            }
-
-            float distanceFromFingerPointer = Vector3.Distance(_transform.position, _nextPointPosition);
-            float distanceFromMousePosition = Vector3.Distance(mousePosition, _nextPointPosition);
-            float moveDistance = Vector3.Distance(previousMousePosition, mousePosition);
             if (distanceFromFingerPointer < RedactorConstants.VECTOR_COMPARISON_TOLERANCE)
             {
                 if (!TryGetNextPointPosition(out Vector3 nextPointPosition))
                 {
-                    _destinationReached = true;
+                    DisableDragDetection();
                     OnDestinationReached?.Invoke(this);
                     return;
                 }
 
                 _nextPointPosition = nextPointPosition;
-                _fingerPointTransform.LookAtZAxis(_nextPointPosition);
-            }
-
-            float diff = distanceFromFingerPointer - distanceFromMousePosition;
-            if (diff > 0)
-            {
-                _transform.position = Vector3.MoveTowards(_transform.position, _nextPointPosition, moveDistance);
+                _fingerPointerArtTransform.LookAtZAxis(_nextPointPosition);
             }
             
-            _pathReached.SetPosition(_nextPointIndex, _transform.position);
-        }
-
-        private void Update()
-        {
-            if (!_isDragging || _destinationReached)
-            {
-                return;
-            }
-            
-            //Debug.Log(" --- update");
-            
+            _pathReached.SetPosition(_nextPointIndex, _fingerPointerTransform.position);
         }
 
         private bool TryGetNextPointPosition(out Vector3 nextPointPosition)
