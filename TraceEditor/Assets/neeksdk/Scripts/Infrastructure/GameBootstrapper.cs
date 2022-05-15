@@ -5,7 +5,7 @@ using UnityEngine.SceneManagement;
 
 namespace neeksdk.Scripts.Infrastructure
 {
-    public class GameBootstrapper : MonoBehaviour
+    public class GameBootstrapper : MonoBehaviour, ICoroutineRunner
     {
         private GameController _game;
         public static GameBootstrapper Instance = null;
@@ -29,7 +29,7 @@ namespace neeksdk.Scripts.Infrastructure
             Instance = this;
             DontDestroyOnLoad(this);
             
-            _game = new GameController();
+            _game = new GameController(this);
             _game.StateMachine.Enter<MainMenuState>();
         }
 

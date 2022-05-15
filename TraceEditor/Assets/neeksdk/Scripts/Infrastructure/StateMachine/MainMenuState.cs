@@ -1,6 +1,4 @@
-using neeksdk.Scripts.StaticData.LevelData;
 using neeksdk.Scripts.UI;
-using UnityEngine;
 
 namespace neeksdk.Scripts.Infrastructure.StateMachine
 {
@@ -9,6 +7,8 @@ namespace neeksdk.Scripts.Infrastructure.StateMachine
         private readonly MainMenuController _mainMenuController;
         private readonly GameStateMachine _stateMachine;
 
+        private const string TEST_SCENE_NAME = "TestScene";
+        
         public MainMenuState(MainMenuController mainMenuController, GameStateMachine stateMachine)
         {
             _mainMenuController = mainMenuController;
@@ -24,7 +24,7 @@ namespace neeksdk.Scripts.Infrastructure.StateMachine
         private void LevelClicked(string path)
         {
             LevelButton.OnLevelClicked -= LevelClicked;
-            _stateMachine.Enter<LoadLevelState, string>(path);
+            _stateMachine.Enter<LoadLevelState, string, string>(TEST_SCENE_NAME, path);
         }
 
         public void Exit()

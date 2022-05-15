@@ -3,9 +3,13 @@ namespace neeksdk.Scripts.Infrastructure.StateMachine {
     void Enter();
   }
 
-  public interface IPayloadedState<TPayload> : IExitableState {
-    void Enter(TPayload payload);
-    
+  public interface IPayloadedState<TScene, TPath> : IExitableState {
+    void Enter(TScene scene, TPath figurePath);
+  }
+
+  public interface ISceneSwitchState<TScene> : IExitableState
+  {
+      void Enter(TScene scene);
   }
   
   public interface IExitableState {
