@@ -63,5 +63,20 @@ namespace neeksdk.Scripts.Infrastructure.SaveLoad
 
             return bezierFigureData != null;
         }
+
+        public static bool TryLoadFigureByFile(string loadPath, out BezierFigureData bezierFigureData)
+        {
+            bezierFigureData = null;
+            BinaryFormatter bf = new BinaryFormatter();
+            FileStream file = File.Open(loadPath, FileMode.Open);
+            if (bf.Deserialize(file) is BezierFigureData figureData)
+            {
+                bezierFigureData = figureData;
+            }
+            
+            file.Close();
+
+            return bezierFigureData != null;
+        }
     }
 }

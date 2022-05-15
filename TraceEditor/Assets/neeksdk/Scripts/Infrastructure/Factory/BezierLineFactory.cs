@@ -2,7 +2,10 @@ using System.IO;
 using neeksdk.Scripts.Configs;
 using neeksdk.Scripts.Constants;
 using neeksdk.Scripts.Extensions;
+using neeksdk.Scripts.FigureTracer;
 using neeksdk.Scripts.LevelCreator.Lines.Mono;
+using neeksdk.Scripts.StaticData.LinesData;
+using RSG;
 using UnityEditor;
 using UnityEngine;
 
@@ -78,6 +81,13 @@ namespace neeksdk.Scripts.Infrastructure.Factory
             bezierLine.StartPointTransform.position = tilePosition;
             
             return bezierLine;
+        }
+
+        public FingerPointer InstantiateNewFingerPointer(Transform parent, Vector3 at)
+        {
+            GameObject fingerPointerGo = GameObject.Instantiate(BezierLineConfig.FingerPointerPrefab.gameObject, at, Quaternion.identity, parent);
+            
+            return fingerPointerGo.GetComponent<FingerPointer>();
         }
     }
 }

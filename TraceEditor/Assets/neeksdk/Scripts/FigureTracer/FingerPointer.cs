@@ -23,7 +23,7 @@ namespace neeksdk.Scripts.FigureTracer
         private Camera _camera;
 
         private const float SCALE_ANIMATION_DURATION = 1f;
-        private const float DRAW_LINE_DURATION = 0.025f;
+        private const float DRAW_LINE_DURATION = 0.15f;
 
         public Action<FingerPointer> OnDestinationReached;
         public Action OnFingerOutOfPointer;
@@ -36,6 +36,7 @@ namespace neeksdk.Scripts.FigureTracer
             }
 
             _camera = mainCamera;
+            _dragHelper.SetCamera(mainCamera);
             _pathReached.positionCount = 1;
             
             Vector3 startPosition = _path.GetPosition(0);
@@ -50,6 +51,14 @@ namespace neeksdk.Scripts.FigureTracer
 
         public void BeginDrag() =>
             _fingerPointerTransform.DOScale(_fingerPointerInitialScale, SCALE_ANIMATION_DURATION).SetEase(Ease.OutCirc).OnComplete(EnableDragging);
+        
+        public IPromise EndDrag()
+        {
+            Promise promise = new Promise();
+            _fingerPointerTransform.DOScale(0, SCALE_ANIMATION_DURATION).SetEase(Ease.OutCirc).OnComplete(promise.Resolve);
+
+            return promise;
+        }
 
         public IPromise PopulateBezierLineData(BezierDotsData dotsData, bool withAnimation = true)
         {
