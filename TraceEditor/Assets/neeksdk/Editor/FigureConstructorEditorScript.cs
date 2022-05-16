@@ -274,14 +274,12 @@ namespace neeksdk.Editor {
                 if (selectDot)
                 {
                     selectedIndex = index;
-                    GUIUtility.ExitGUI();
                 }
                 
                 bool deleteDot = GUILayout.Button("delete dot", GetRedGuyStile(), GUILayout.Height(EditorGUIUtility.singleLineHeight));
                 if (deleteDot)
                 {
                     deletedIndex = index;
-                    GUIUtility.ExitGUI();
                 }
                 EditorGUILayout.EndHorizontal();
             }
@@ -473,6 +471,11 @@ namespace neeksdk.Editor {
 
         private void CheckMouseDrag(bool isInsideGridBounds)
         {
+            if (_selectedBezierLine == null)
+            {
+                return;
+            }
+            
             switch (Event.current.type)
             {
                 case EventType.MouseDown:

@@ -92,7 +92,7 @@ namespace neeksdk.Scripts.LevelCreator.Lines.Mono
                 _lineRenderer.positionCount = 0;
                 return;
             }
-            
+
             _lineRenderer.PopulateBezierPoints(_startLinePoint.position, Dots, _bezierVertexCount);
         }
 

@@ -113,8 +113,8 @@ LineRenderer:
       m_RotationOrder: 4
     colorGradient:
       serializedVersion: 2
-      key0: {r: 0, g: 0.12835224, b: 0.5188679, a: 1}
-      key1: {r: 0.5235849, g: 0.88282335, b: 1, a: 1}
+      key0: {r: 1, g: 1, b: 1, a: 1}
+      key1: {r: 1, g: 1, b: 1, a: 1}
       key2: {r: 0, g: 0, b: 0, a: 0}
       key3: {r: 0, g: 0, b: 0, a: 0}
       key4: {r: 0, g: 0, b: 0, a: 0}
@@ -162,9 +162,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _colorPresets:
   - ColorType: 3
-    Color: {r: 0.47058824, g: 0.47058824, b: 0.47058824, a: 1}
+    Color: {r: 0.5019608, g: 0.5019608, b: 0.5019608, a: 1}
   - ColorType: 2
-    Color: {r: 0.47058824, g: 0.47058824, b: 0.47058824, a: 0.101960786}
+    Color: {r: 0.5019608, g: 0.5019608, b: 0.5019608, a: 0.101960786}
 --- !u!1 &4532107609910838845
 GameObject:
   m_ObjectHideFlags: 0
@@ -193,7 +193,7 @@ Transform:
   m_GameObject: {fileID: 4532107609910838845}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.3, y: 0.3, z: 0.3}
   m_Children:
   - {fileID: 4532107610013987325}
   m_Father: {fileID: 4532107608806923336}
@@ -267,9 +267,9 @@ MonoBehaviour:
   - ColorType: 1
     Color: {r: 0, g: 0.4557476, b: 1, a: 1}
   - ColorType: 3
-    Color: {r: 0.47058824, g: 0.47058824, b: 0.47058824, a: 1}
+    Color: {r: 0.5882353, g: 1, b: 0.9411765, a: 1}
   - ColorType: 2
-    Color: {r: 0.47058824, g: 0.47058824, b: 0.47058824, a: 0.101960786}
+    Color: {r: 0.5019608, g: 0.5019608, b: 0.5019608, a: 0.101960786}
 --- !u!135 &1108170337412955736
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -383,6 +383,6 @@ MonoBehaviour:
   - ColorType: 1
     Color: {r: 0, g: 0.4557476, b: 1, a: 1}
   - ColorType: 3
-    Color: {r: 0.47058824, g: 0.47058824, b: 0.47058824, a: 1}
+    Color: {r: 0.5019608, g: 0.5019608, b: 0.5019608, a: 1}
   - ColorType: 2
-    Color: {r: 0.47058824, g: 0.47058824, b: 0.47058824, a: 0.101960786}
+    Color: {r: 0.5019608, g: 0.5019608, b: 0.5019608, a: 0.101960786}

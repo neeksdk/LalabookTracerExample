@@ -166,9 +166,9 @@ MonoBehaviour:
   - ColorType: 1
     Color: {r: 0.023584902, g: 0.4924113, b: 1, a: 1}
   - ColorType: 3
-    Color: {r: 0.47058824, g: 0.47058824, b: 0.47058824, a: 1}
+    Color: {r: 0.5882353, g: 1, b: 0.9411765, a: 1}
   - ColorType: 2
-    Color: {r: 0.47058824, g: 0.47058824, b: 0.47058824, a: 0.101960786}
+    Color: {r: 0.5019608, g: 0.5019608, b: 0.5019608, a: 0.101960786}
 --- !u!135 &2818581022985848622
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -283,9 +283,9 @@ MonoBehaviour:
   - ColorType: 1
     Color: {r: 1, g: 0.18422438, b: 0, a: 1}
   - ColorType: 3
-    Color: {r: 0.47058824, g: 0.47058824, b: 0.47058824, a: 1}
+    Color: {r: 1, g: 0.5882353, b: 0.5882353, a: 1}
   - ColorType: 2
-    Color: {r: 0.47058824, g: 0.47058824, b: 0.47058824, a: 0.101960786}
+    Color: {r: 0.5019608, g: 0.5019608, b: 0.5019608, a: 0.101960786}
 --- !u!135 &5844368511781497831
 SphereCollider:
   m_ObjectHideFlags: 0

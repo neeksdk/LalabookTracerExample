@@ -17,8 +17,9 @@ namespace neeksdk.Editor
             EditorSceneManager.OpenScene(FIGURE_REDACTOR_SCENE, OpenSceneMode.Single);
             GameObject figureConstructorGo = GameObject.FindGameObjectWithTag("FigureConstructor");
             Selection.activeGameObject = figureConstructorGo;
-            figureConstructorGo.GetComponent<FigureConstructor>().RemoveAllChildren();
-            
+            FigureConstructor figureConstructor = figureConstructorGo.GetComponent<FigureConstructor>();
+            figureConstructor.RemoveAllChildren();
+            EditorUtility.SetDirty(figureConstructor);
             Vector3 position = SceneView.lastActiveSceneView.pivot;
             position.x = RedactorConstants.REDACTOR_WIDTH / 2f;
             position.y = RedactorConstants.REDACTOR_HEIGHT / 2f;

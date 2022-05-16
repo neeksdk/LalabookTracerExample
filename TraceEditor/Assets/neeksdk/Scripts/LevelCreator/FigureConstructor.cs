@@ -25,6 +25,8 @@ namespace neeksdk.Scripts.LevelCreator
             {
                 DestroyImmediate(child.gameObject);
             }
+            
+            _lineRenderers.Clear();
         }
         
         private void OnDrawGizmos() {

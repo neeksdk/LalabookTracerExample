@@ -8,6 +8,13 @@ namespace neeksdk.Scripts.Extensions
     {
         public static void PopulateBezierPoints(this LineRenderer lineRenderer, Vector3 initialPos, List<IBezierLinePart> lineParts, int vertexCount = 12)
         {
+            if (lineParts.Count == 0)
+            {
+                lineRenderer.positionCount = 1;
+                lineRenderer.SetPosition(0, initialPos);
+                return;
+            }
+            
             List<Vector3> pointList = new List<Vector3>();
             Vector3 startPos = initialPos;
             foreach (IBezierLinePart linePart in lineParts)
