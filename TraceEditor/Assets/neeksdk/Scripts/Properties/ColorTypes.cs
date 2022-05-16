@@ -4,6 +4,7 @@ namespace neeksdk.Scripts.Properties
     {
         Normal,
         Selected,
-        Hidden
+        Hidden,
+        Revealed
     }
 }

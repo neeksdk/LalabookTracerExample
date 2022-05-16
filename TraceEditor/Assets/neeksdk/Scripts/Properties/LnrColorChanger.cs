@@ -1,29 +1,29 @@
-﻿using System;
+using System;
 using UnityEngine;
 
 namespace neeksdk.Scripts.Properties
 {
-    [RequireComponent(typeof(SpriteRenderer))]
-    public class SprColorChanger : MonoBehaviour
+    [RequireComponent(typeof(LineRenderer))]
+    public class LnrColorChanger : MonoBehaviour
     {
         [SerializeField] private ColorPreset[] _colorPresets;
         
         private MaterialPropertyBlock _mpb;
-        private SpriteRenderer _spr;
+        private LineRenderer _lpr;
 
         private static readonly int ShaderPropertyColor = Shader.PropertyToID("_Color");
         private static readonly int ShaderPropertyTintColor = Shader.PropertyToID("_TintColor");
 
-        SpriteRenderer Spr
+        LineRenderer Lpr
         {
             get
             {
-                if (_spr == null)
+                if (_lpr == null)
                 {
-                    _spr = GetComponent<SpriteRenderer>();
+                    _lpr = GetComponent<LineRenderer>();
                 }
 
-                return _spr;
+                return _lpr;
             }
         }
         MaterialPropertyBlock Mbp
@@ -42,13 +42,13 @@ namespace neeksdk.Scripts.Properties
         public void ApplyAlpha(ColorTypes colorTypes)
         {
             Mbp.SetColor(ShaderPropertyTintColor, GetColor(colorTypes));
-            Spr.SetPropertyBlock(Mbp);
+            Lpr.SetPropertyBlock(Mbp);
         }
         
         public void ApplyColor(ColorTypes colorType)
         {
             Mbp.SetColor(ShaderPropertyColor, GetColor(colorType));
-            Spr.SetPropertyBlock(Mbp);
+            Lpr.SetPropertyBlock(Mbp);
         }
 
         private Color GetColor(ColorTypes colorType)

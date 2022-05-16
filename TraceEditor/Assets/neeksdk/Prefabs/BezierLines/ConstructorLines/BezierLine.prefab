@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 4532107608806923336}
   - component: {fileID: 4532107608806923342}
   - component: {fileID: 4532107608806923337}
+  - component: {fileID: 4190155676166892610}
   m_Layer: 0
   m_Name: BezierLine
   m_TagString: Untagged
@@ -48,6 +49,8 @@ MonoBehaviour:
   _lineRenderer: {fileID: 4532107608806923337}
   _startLinePoint: {fileID: 4532107609910838844}
   _startLinePointColorChanger: {fileID: 5629271856276342155}
+  _fingePointerColorChanger: {fileID: 4869644074927899078}
+  _lineColorChanger: {fileID: 4190155676166892610}
   _fingerPointer: {fileID: 4532107610013987325}
   _bezierVertexCount: 12
 --- !u!120 &4532107608806923337
@@ -145,6 +148,23 @@ LineRenderer:
     generateLightingData: 0
   m_UseWorldSpace: 1
   m_Loop: 0
+--- !u!114 &4190155676166892610
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4532107608806923343}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 01f074697dda474c81ec0662c20164f1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _colorPresets:
+  - ColorType: 3
+    Color: {r: 0.47058824, g: 0.47058824, b: 0.47058824, a: 1}
+  - ColorType: 2
+    Color: {r: 0.47058824, g: 0.47058824, b: 0.47058824, a: 0.101960786}
 --- !u!1 &4532107609910838845
 GameObject:
   m_ObjectHideFlags: 0
@@ -246,8 +266,10 @@ MonoBehaviour:
     Color: {r: 0.5882353, g: 1, b: 0.9411765, a: 1}
   - ColorType: 1
     Color: {r: 0, g: 0.4557476, b: 1, a: 1}
+  - ColorType: 3
+    Color: {r: 0.47058824, g: 0.47058824, b: 0.47058824, a: 1}
   - ColorType: 2
-    Color: {r: 0, g: 0, b: 0, a: 0.29803923}
+    Color: {r: 0.47058824, g: 0.47058824, b: 0.47058824, a: 0.101960786}
 --- !u!135 &1108170337412955736
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -271,6 +293,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4532107610013987325}
   - component: {fileID: 4532107610013987327}
+  - component: {fileID: 4869644074927899078}
   m_Layer: 0
   m_Name: FingerPointer
   m_TagString: Untagged
@@ -342,3 +365,24 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &4869644074927899078
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4532107610013987298}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 72dd450554fc3c94f8e933a9af7f452e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _colorPresets:
+  - ColorType: 0
+    Color: {r: 0.5882353, g: 1, b: 0.9411765, a: 1}
+  - ColorType: 1
+    Color: {r: 0, g: 0.4557476, b: 1, a: 1}
+  - ColorType: 3
+    Color: {r: 0.47058824, g: 0.47058824, b: 0.47058824, a: 1}
+  - ColorType: 2
+    Color: {r: 0.47058824, g: 0.47058824, b: 0.47058824, a: 0.101960786}

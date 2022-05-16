@@ -308,7 +308,7 @@ namespace neeksdk.Editor {
         {
             ActivateAllLines(false);
             _selectedBezierLine = _myTarget.LineRenderers[i];
-            _selectedBezierLine.gameObject.SetActive(true);
+            _selectedBezierLine.ChangeDotsAlpha(true);
             if (_selectedBezierLine.Dots.Count == 0 && _selectedBezierLine.transform.childCount > 0)
             {
                 foreach (IBezierLinePart bezierLinePart in _selectedBezierLine.transform.GetComponentsInChildren<IBezierLinePart>())
@@ -322,7 +322,7 @@ namespace neeksdk.Editor {
         {
             foreach (BezierLine lineRenderer in _myTarget.LineRenderers)
             {
-                lineRenderer.gameObject.SetActive(show);
+                lineRenderer.ChangeDotsAlpha(show);
             }
         }
 

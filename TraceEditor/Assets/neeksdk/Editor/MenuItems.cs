@@ -1,8 +1,8 @@
 ﻿using neeksdk.Scripts.Constants;
+using neeksdk.Scripts.LevelCreator;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace neeksdk.Editor
 {
@@ -15,7 +15,9 @@ namespace neeksdk.Editor
         private static void OpenFigureRedactor()
         {
             EditorSceneManager.OpenScene(FIGURE_REDACTOR_SCENE, OpenSceneMode.Single);
-            Selection.activeGameObject = GameObject.FindGameObjectWithTag("FigureConstructor");
+            GameObject figureConstructorGo = GameObject.FindGameObjectWithTag("FigureConstructor");
+            Selection.activeGameObject = figureConstructorGo;
+            figureConstructorGo.GetComponent<FigureConstructor>().RemoveAllChildren();
             
             Vector3 position = SceneView.lastActiveSceneView.pivot;
             position.x = RedactorConstants.REDACTOR_WIDTH / 2f;

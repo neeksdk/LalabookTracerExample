@@ -19,6 +19,14 @@ namespace neeksdk.Scripts.LevelCreator
         }
 
 #if UNITY_EDITOR
+        public void RemoveAllChildren()
+        {
+            foreach (BezierLine child in LineRenderers)
+            {
+                DestroyImmediate(child.gameObject);
+            }
+        }
+        
         private void OnDrawGizmos() {
             Color oldColor = Gizmos.color;
             Gizmos.color = Color.black;

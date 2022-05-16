@@ -12,6 +12,8 @@ namespace neeksdk.Scripts.LevelCreator.Lines.Mono
         [SerializeField] private LineRenderer _lineRenderer;
         [SerializeField] private Transform _startLinePoint;
         [SerializeField] private SprColorChanger _startLinePointColorChanger;
+        [SerializeField] private SprColorChanger _fingePointerColorChanger;
+        [SerializeField] private LnrColorChanger _lineColorChanger;
         [SerializeField] private Transform _fingerPointer;
         [SerializeField] private int _bezierVertexCount;
 
@@ -68,6 +70,18 @@ namespace neeksdk.Scripts.LevelCreator.Lines.Mono
             foreach (IBezierLinePart bezierLinePart in Dots)
             {
                 bezierLinePart.ApplyColor(colorType);
+            }
+        }
+
+        public void ChangeDotsAlpha(bool showLine)
+        {
+            ColorTypes colorType = showLine ? ColorTypes.Revealed : ColorTypes.Hidden;
+            _startLinePointColorChanger.ApplyAlpha(colorType);
+            _fingePointerColorChanger.ApplyAlpha(colorType);
+            _lineColorChanger.ApplyAlpha(colorType);
+            foreach (IBezierLinePart bezierLinePart in Dots)
+            {
+                bezierLinePart.GameObject.SetActive(showLine);
             }
         }
 
