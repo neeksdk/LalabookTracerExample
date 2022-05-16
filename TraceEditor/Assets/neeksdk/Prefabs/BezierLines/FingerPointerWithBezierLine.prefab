@@ -408,6 +408,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1255115943335395523}
   - component: {fileID: 6178262828114048335}
+  - component: {fileID: 651430983916733414}
   - component: {fileID: 1255115943335395522}
   m_Layer: 0
   m_Name: FingerPointerWithBezierLine
@@ -455,6 +456,30 @@ MonoBehaviour:
   _endDot: {fileID: 8276622642891500342}
   _endDotRadialArtGo: {fileID: 1012609936110024039}
   _particleSystem: {fileID: 4523647219453354348}
+  _sortingOrderHelper: {fileID: 651430983916733414}
+--- !u!114 &651430983916733414
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1255115943335395524}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3045391abf44544a34f4dca6a0b4513, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _renderers:
+  - ObjectRenderer: {fileID: 1255115943335395522}
+    InitialSortingOrder: 1
+  - ObjectRenderer: {fileID: 421914416854503739}
+    InitialSortingOrder: 2
+  - ObjectRenderer: {fileID: 1255115942291249845}
+    InitialSortingOrder: 5
+  - ObjectRenderer: {fileID: 1255115942122089844}
+    InitialSortingOrder: 4
+  - ObjectRenderer: {fileID: 3316348556495244532}
+    InitialSortingOrder: 3
 --- !u!120 &1255115943335395522
 LineRenderer:
   m_ObjectHideFlags: 0
@@ -5279,7 +5304,7 @@ ParticleSystemRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 3
   m_RenderMode: 0
   m_SortMode: 0
   m_MinParticleSize: 0

@@ -9,18 +9,21 @@ using neeksdk.Scripts.UI;
 using RSG;
 using UnityEngine;
 
+//if want to show full path of figure
+//#define USE_SORTING_ORDER
+
 namespace neeksdk.Scripts.Infrastructure.SceneController
 {
     public class GameController
     {
         public GameStateMachine StateMachine { get; }
-        private BezierLineFactory _bezierLineFactory;
+        private readonly BezierLineFactory _bezierLineFactory;
         private GameInterfaceView _gameInterfaceView;
         private FigureContainer _figureContainer;
 
-        private List<FingerPointer> _allLines = new List<FingerPointer>();
+        private readonly List<FingerPointer> _allLines = new List<FingerPointer>();
         private BezierFigureData _allFigureData;
-        private FingerPointer _currenFingerPointer; 
+        private FingerPointer _currentFingerPointer; 
         
         private int _currentLineIndex;
 
@@ -42,8 +45,7 @@ namespace neeksdk.Scripts.Infrastructure.SceneController
             if (!SaveLoadDataClass.TryLoadFigureByFile(figurePath, out BezierFigureData figureData))
             {
                 promise.Resolve();
-                
-                //todo: inform that file can't be loaded 
+                _gameInterfaceView.SetInformText("File can't be loaded. Return to main menu and try another file.");
                 
                 return promise;
             }
@@ -82,33 +84,35 @@ namespace neeksdk.Scripts.Infrastructure.SceneController
         private void StartNextLineDraw()
         {
             _currentLineIndex += 1;
-            _currenFingerPointer = _allLines[_currentLineIndex];
-            _currenFingerPointer.SetupFingerPointer(Camera.main);
-            _currenFingerPointer.BeginDrag();
-            _currenFingerPointer.OnDestinationReached += DestinationReached;
-            _currenFingerPointer.OnFingerOutOfPointer += FingerOutOfPointer;
-            _currenFingerPointer.OnFingerStartDragging += FingerStartDragging;
+            _currentFingerPointer = _allLines[_currentLineIndex];
+#if USE_SORTING_ORDER
+            _currenFingerPointer.SetSortingOrder(1);
+#endif
+            _currentFingerPointer.SetupFingerPointer(Camera.main);
+            _currentFingerPointer.BeginDrag();
+            _currentFingerPointer.OnDestinationReached += DestinationReached;
+            _currentFingerPointer.OnFingerOutOfPointer += FingerOutOfPointer;
+            _currentFingerPointer.OnFingerStartDragging += FingerStartDragging;
         }
 
         private void DestinationReached(FingerPointer fingerPointer)
         {
-            _currenFingerPointer.OnDestinationReached -= DestinationReached;
-            _currenFingerPointer.OnFingerOutOfPointer -= FingerOutOfPointer;
-            _currenFingerPointer.OnFingerStartDragging -= FingerStartDragging;
-            _currenFingerPointer.EndDrag().Then(() =>
+            _currentFingerPointer.OnDestinationReached -= DestinationReached;
+            _currentFingerPointer.OnFingerOutOfPointer -= FingerOutOfPointer;
+            _currentFingerPointer.OnFingerStartDragging -= FingerStartDragging;
+            _currentFingerPointer.EndDrag().Then(() =>
             {
                 if (_allLines.Count > _currentLineIndex + 1)
                 {
+#if USE_SORTING_ORDER
+                    _allLines[_currentLineIndex].SetSortingOrder(0);
+#endif
                     StartNextLineDraw();
-                    //todo: change sorting orders
                 }
                 else
                 {
                     _gameInterfaceView.SetInformText("Congratulations! You complete drawing figure! To begin a new draw, please return to main menu.");
-                    //todo: show reward
                 }
-                
-                //todo: add particles to finger pointer
             });
         }
 

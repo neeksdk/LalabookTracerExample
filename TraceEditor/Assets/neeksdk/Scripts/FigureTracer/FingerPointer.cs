@@ -20,6 +20,7 @@ namespace neeksdk.Scripts.FigureTracer
         [SerializeField] private Transform _endDot;
         [SerializeField] private GameObject _endDotRadialArtGo;
         [SerializeField] private ParticleSystem _particleSystem;
+        [SerializeField] private SortingOrderHelper _sortingOrderHelper;
 
         private List<PositionData> _positionData = new List<PositionData>();
         private Vector3 _nextPointPosition;
@@ -28,7 +29,7 @@ namespace neeksdk.Scripts.FigureTracer
         private Camera _camera;
         private int _lastSegmentIndex;
 
-        private const float SCALE_ANIMATION_DURATION = 1f;
+        private const float SCALE_ANIMATION_DURATION = 0.5f;
         private const float DRAW_LINE_DURATION = 0.05f;
 
         public Action<FingerPointer> OnDestinationReached;
@@ -66,7 +67,7 @@ namespace neeksdk.Scripts.FigureTracer
             _particleSystem.Stop();
             _fingerPointerTransform.DOScale(0, SCALE_ANIMATION_DURATION).SetEase(Ease.OutCirc).OnComplete(promise.Resolve);
 
-            return promise;
+            return Promise.Resolved();
         }
 
         public IPromise PopulateBezierLineData(BezierDotsData dotsData, bool withAnimation = true)
@@ -133,6 +134,8 @@ namespace neeksdk.Scripts.FigureTracer
                 initialPos = _positionData[nextDotIndex - 1].DotPosition;
             }
         }
+
+        public void SetSortingOrder(int sortingOrder) => _sortingOrderHelper.SetSortingOrder(sortingOrder);
 
         private void Awake()
         {
