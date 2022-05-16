@@ -19,6 +19,7 @@ namespace neeksdk.Scripts.FigureTracer
         [SerializeField] private Transform _startDot;
         [SerializeField] private Transform _endDot;
         [SerializeField] private GameObject _endDotRadialArtGo;
+        [SerializeField] private ParticleSystem _particleSystem;
 
         private List<PositionData> _positionData = new List<PositionData>();
         private Vector3 _nextPointPosition;
@@ -62,6 +63,7 @@ namespace neeksdk.Scripts.FigureTracer
         public IPromise EndDrag()
         {
             Promise promise = new Promise();
+            _particleSystem.Stop();
             _fingerPointerTransform.DOScale(0, SCALE_ANIMATION_DURATION).SetEase(Ease.OutCirc).OnComplete(promise.Resolve);
 
             return promise;
@@ -124,7 +126,10 @@ namespace neeksdk.Scripts.FigureTracer
                     nextDotIndex += 1;
                 }
 
-                _positionData[nextDotIndex - 1].IsSegment = true;
+                if (index != dotsData.LineDots.Length - 1)
+                {
+                    _positionData[nextDotIndex - 1].IsSegment = true;
+                }
                 initialPos = _positionData[nextDotIndex - 1].DotPosition;
             }
         }
@@ -145,6 +150,7 @@ namespace neeksdk.Scripts.FigureTracer
             _pathReached.SetPosition(_nextPointIndex, lastPointPosition);
             _fingerPointerArtTransform.LookAtZAxis(_nextPointPosition);
             OnFingerOutOfPointer?.Invoke();
+            _particleSystem.Stop();
         }
 
         private void EnableDragging()
@@ -165,6 +171,7 @@ namespace neeksdk.Scripts.FigureTracer
 
         private void MoveFingerPointer()
         {
+            EmitParticlesOnMove();
             Vector3 mousePosition = _camera.GetMousePosition();
             Vector3 startPoint = _path.GetPosition(_nextPointIndex - 1);
             Vector3 endPoint = _nextPointPosition;
@@ -229,6 +236,16 @@ namespace neeksdk.Scripts.FigureTracer
                 DotPosition = position,
                 IsSegment = isSegment
             };
+        }
+
+        private void EmitParticlesOnMove()
+        {
+            if (_particleSystem.isPlaying)
+            {
+                return;
+            }
+            
+            _particleSystem.Play();
         }
     }
 }
