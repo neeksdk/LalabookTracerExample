@@ -87,24 +87,33 @@ namespace neeksdk.Scripts.Infrastructure.SceneController
             _currenFingerPointer.BeginDrag();
             _currenFingerPointer.OnDestinationReached += DestinationReached;
             _currenFingerPointer.OnFingerOutOfPointer += FingerOutOfPointer;
+            _currenFingerPointer.OnFingerStartDragging += FingerStartDragging;
         }
 
-        private void DestinationReached(FingerPointer obj)
+        private void DestinationReached(FingerPointer fingerPointer)
         {
             _currenFingerPointer.OnDestinationReached -= DestinationReached;
             _currenFingerPointer.OnFingerOutOfPointer -= FingerOutOfPointer;
+            _currenFingerPointer.OnFingerStartDragging -= FingerStartDragging;
             _currenFingerPointer.EndDrag().Then(() =>
             {
-                //todo: check if line ends, if not, change sorting orders and continue draw lines
-                //todo: if completes - sgow reward and go to main menu
+                if (_allLines.Count < _currentLineIndex + 1)
+                {
+                    StartNextLineDraw();
+                    //todo: change sorting orders
+                }
+                else
+                {
+                    _gameInterfaceView.SetInformText("Congratulations! You complete drawing figure! To begin a new draw, please return to main menu.");
+                    //todo: show reward
+                }
+                
                 //todo: add particles to finger pointer
             });
         }
 
-        private void FingerOutOfPointer()
-        {
-            //todo: inform about finger wrong direction   
-        }
+        private void FingerStartDragging() => _gameInterfaceView.EmptyInformText();
+        private void FingerOutOfPointer() => _gameInterfaceView.SetInformText("You've get out of shape, please try again...");
 
         private void ClearGame()
         {

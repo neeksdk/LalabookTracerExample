@@ -8,6 +8,7 @@ namespace neeksdk.Scripts.FigureTracer
     {
         public Action OnDrag;
         public Action OnFingerOutOfPointer;
+        public Action OnDragStart;
 
         private bool _enableDragDetection = false;
         private bool _isDragging = false;
@@ -31,6 +32,7 @@ namespace neeksdk.Scripts.FigureTracer
             }
 
             _isDragging = true;
+            OnDragStart?.Invoke();
         }
 
         private void OnMouseUp()

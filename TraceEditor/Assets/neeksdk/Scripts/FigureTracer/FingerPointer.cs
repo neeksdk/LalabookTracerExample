@@ -32,6 +32,7 @@ namespace neeksdk.Scripts.FigureTracer
 
         public Action<FingerPointer> OnDestinationReached;
         public Action OnFingerOutOfPointer;
+        public Action OnFingerStartDragging;
 
         public void SetupFingerPointer(Camera mainCamera)
         {
@@ -118,22 +119,13 @@ namespace neeksdk.Scripts.FigureTracer
                 for (int i = 0; i < curvePoints.Count; i++)
                 {
                     Vector3 curvePoint = curvePoints[i];
-                    _positionData.Add(GetPositionData(curvePoint));
+                    _positionData.Add( GetPositionData(curvePoint));
                     nextDotIndex += 1;
                 }
 
                 _positionData[nextDotIndex - 1].IsSegment = true;
                 initialPos = _positionData[nextDotIndex - 1].DotPosition;
             }
-        }
-
-        private PositionData GetPositionData(Vector3 position, bool isSegment = false)
-        {
-            return new PositionData()
-            {
-                DotPosition = position,
-                IsSegment = isSegment
-            };
         }
 
         private void Awake()
@@ -159,6 +151,7 @@ namespace neeksdk.Scripts.FigureTracer
             _dragHelper.StartDragDetection(true);
             _dragHelper.OnDrag += MoveFingerPointer;
             _dragHelper.OnFingerOutOfPointer += FingerOutOfPointer;
+            _dragHelper.OnDragStart += FingerStartDragging;
         }
         
         private void DisableDragDetection()
@@ -166,8 +159,9 @@ namespace neeksdk.Scripts.FigureTracer
             _dragHelper.StartDragDetection(false);
             _dragHelper.OnDrag -= MoveFingerPointer;
             _dragHelper.OnFingerOutOfPointer -= FingerOutOfPointer;
+            _dragHelper.OnDragStart -= FingerStartDragging;
         }
-        
+
         private void MoveFingerPointer()
         {
             Vector3 mousePosition = _camera.GetMousePosition();
@@ -218,11 +212,22 @@ namespace neeksdk.Scripts.FigureTracer
             nextPointPosition = nextPositionData.DotPosition;
             return true;
         }
+        
+        private void FingerStartDragging() => OnFingerStartDragging?.Invoke();
 
         private class PositionData
         {
             public Vector3 DotPosition;
             public bool IsSegment;
+        }
+        
+        private PositionData GetPositionData(Vector3 position, bool isSegment = false)
+        {
+            return new PositionData()
+            {
+                DotPosition = position,
+                IsSegment = isSegment
+            };
         }
     }
 }
