@@ -102,10 +102,13 @@ namespace neeksdk.Scripts.FigureTracer
                     
                     DOVirtual.Float(0, distance, DRAW_LINE_DURATION, lerpDist =>
                     {
-                        Vector3 nextPosition = Vector3.MoveTowards(from, nextDotPosition, lerpDist);
-                        _path.SetPosition(index, nextPosition);
-                        _endDot.position = nextPosition;
-                    }).SetEase(Ease.Linear).OnComplete(() => promise.Resolve());
+                        if (_path != null)
+                        {
+                            Vector3 nextPosition = Vector3.MoveTowards(from, nextDotPosition, lerpDist);
+                            _path.SetPosition(index, nextPosition);
+                            _endDot.position = nextPosition;
+                        }
+                    }).SetEase(Ease.Linear).OnComplete(() => promise.Resolve()).SetAutoKill(true);
                     return promise;
                 });
 
