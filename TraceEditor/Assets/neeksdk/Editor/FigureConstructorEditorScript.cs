@@ -543,6 +543,7 @@ namespace neeksdk.Editor {
                     BezierLineFactory.InstantiateDotPrefab(coords, _pieceSelected, _selectedBezierLine,  _myTarget.transform.GridToWorldCoordinates(coords.row, coords.col));
                     _selectedBezierLine.Dots[i].SetBezierControlPointPosition(bezierControlDotPos);
                 }
+                _selectedBezierLine.UpdateLineWithFingerPoint();
             }   
                 
             _currentFigureConstructorModes = FigureConstructorModes.View;
