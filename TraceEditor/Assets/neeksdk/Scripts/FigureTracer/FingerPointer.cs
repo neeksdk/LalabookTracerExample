@@ -86,6 +86,7 @@ namespace neeksdk.Scripts.FigureTracer
                 {
                     Promise promise = new Promise();
                     _path.positionCount = index + 1;
+                    _path.SetPosition(index, _path.GetPosition(index - 1));
                     Vector3 nextDotPosition = _positionData[index].DotPosition;
                     float distance = Vector3.Distance(from, nextDotPosition);
                     
