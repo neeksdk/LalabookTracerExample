@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using DG.Tweening;
 using neeksdk.Scripts.Constants;
 using neeksdk.Scripts.Extensions;
+using neeksdk.Scripts.Properties;
 using neeksdk.Scripts.StaticData.LinesData;
 using RSG;
 using UnityEngine;
@@ -21,8 +22,10 @@ namespace neeksdk.Scripts.FigureTracer
         [SerializeField] private GameObject _endDotRadialArtGo;
         [SerializeField] private ParticleSystem _particleSystem;
         [SerializeField] private SortingOrderHelper _sortingOrderHelper;
+        [SerializeField] private LnrColorChanger _lnrColorChanger;
+        [SerializeField] private Texture2D _rendererTexture;
 
-        private List<PositionData> _positionData = new List<PositionData>();
+        private readonly List<PositionData> _positionData = new List<PositionData>();
         private Vector3 _nextPointPosition;
         private Vector3 _fingerPointerInitialScale;
         private int _nextPointIndex;
@@ -58,9 +61,14 @@ namespace neeksdk.Scripts.FigureTracer
             _fingerPointerArtTransform.LookAtZAxis(_nextPointPosition);
         }
 
-        public void BeginDrag() =>
-            _fingerPointerTransform.DOScale(_fingerPointerInitialScale, SCALE_ANIMATION_DURATION).SetEase(Ease.OutCirc).OnComplete(EnableDragging);
-        
+        public void BeginDrag()
+        {
+            _lnrColorChanger.ApplyTexture(_rendererTexture);
+            _endDotRadialArtGo.SetActive(true);
+            _fingerPointerTransform.DOScale(_fingerPointerInitialScale, SCALE_ANIMATION_DURATION).SetEase(Ease.OutCirc)
+                .OnComplete(EnableDragging);
+        }
+
         public IPromise EndDrag()
         {
             Promise promise = new Promise();
@@ -72,6 +80,7 @@ namespace neeksdk.Scripts.FigureTracer
 
         public IPromise PopulateBezierLineData(BezierDotsData dotsData, bool withAnimation = true)
         {
+            _lnrColorChanger.ApplyTexture(Texture2D.whiteTexture);
             PopulatePositionsArray(dotsData);
             _path.positionCount = 1;
             Vector3 previousPosition = _positionData[0].DotPosition;
@@ -104,7 +113,7 @@ namespace neeksdk.Scripts.FigureTracer
                 previousPosition = _positionData[i].DotPosition;
             }
 
-            return Promise.Sequence(promises).Then(() => _endDotRadialArtGo.SetActive(true));
+            return Promise.Sequence(promises);
         }
 
         private void PopulatePositionsArray(BezierDotsData dotsData)
@@ -139,6 +148,11 @@ namespace neeksdk.Scripts.FigureTracer
         {
             _fingerPointerInitialScale = _fingerPointerTransform.localScale;
             _fingerPointerTransform.localScale = Vector3.zero;
+        }
+
+        private void OnDestroy()
+        {
+            _fingerPointerTransform.DOKill();
         }
 
         private void FingerOutOfPointer()

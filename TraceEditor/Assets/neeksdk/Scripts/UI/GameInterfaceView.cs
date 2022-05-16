@@ -14,6 +14,7 @@ namespace neeksdk.Scripts.UI
         
         public void SetupView()
         {
+            _closeButton.gameObject.SetActive(true);
             _closeButton.onClick.AddListener(CloseButtonClick);
            EmptyInformText();
         }

@@ -78,8 +78,8 @@ LineRenderer:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
-        time: 0.04019928
-        value: 0.279274
+        time: 0
+        value: 0.31874847
         inSlope: 0
         outSlope: 0
         tangentMode: 0
@@ -195,7 +195,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 1
   m_Sprite: {fileID: 21300000, guid: 1291bacee68201c41a44f3c0a788d42a, type: 3}
   m_Color: {r: 0.7764706, g: 0.77254903, b: 0.7764706, a: 1}
   m_FlipX: 0
@@ -409,6 +409,7 @@ GameObject:
   - component: {fileID: 1255115943335395523}
   - component: {fileID: 6178262828114048335}
   - component: {fileID: 651430983916733414}
+  - component: {fileID: 7521859519953681966}
   - component: {fileID: 1255115943335395522}
   m_Layer: 0
   m_Name: FingerPointerWithBezierLine
@@ -457,6 +458,8 @@ MonoBehaviour:
   _endDotRadialArtGo: {fileID: 1012609936110024039}
   _particleSystem: {fileID: 4523647219453354348}
   _sortingOrderHelper: {fileID: 651430983916733414}
+  _lnrColorChanger: {fileID: 7521859519953681966}
+  _rendererTexture: {fileID: 2800000, guid: aa09bdd3d181ce546b46421ee3f2d732, type: 3}
 --- !u!114 &651430983916733414
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -473,13 +476,28 @@ MonoBehaviour:
   - ObjectRenderer: {fileID: 1255115943335395522}
     InitialSortingOrder: 1
   - ObjectRenderer: {fileID: 421914416854503739}
-    InitialSortingOrder: 2
-  - ObjectRenderer: {fileID: 1255115942291249845}
-    InitialSortingOrder: 5
-  - ObjectRenderer: {fileID: 1255115942122089844}
-    InitialSortingOrder: 4
-  - ObjectRenderer: {fileID: 3316348556495244532}
     InitialSortingOrder: 3
+  - ObjectRenderer: {fileID: 1255115942291249845}
+    InitialSortingOrder: 6
+  - ObjectRenderer: {fileID: 1255115942122089844}
+    InitialSortingOrder: 5
+  - ObjectRenderer: {fileID: 3316348556495244532}
+    InitialSortingOrder: 4
+  - ObjectRenderer: {fileID: 7613038822343956327}
+    InitialSortingOrder: 2
+--- !u!114 &7521859519953681966
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1255115943335395524}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 01f074697dda474c81ec0662c20164f1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _colorPresets: []
 --- !u!120 &1255115943335395522
 LineRenderer:
   m_ObjectHideFlags: 0

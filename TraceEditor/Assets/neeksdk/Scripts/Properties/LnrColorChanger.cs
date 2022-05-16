@@ -10,9 +10,9 @@ namespace neeksdk.Scripts.Properties
         
         private MaterialPropertyBlock _mpb;
         private LineRenderer _lpr;
-
-        private static readonly int ShaderPropertyColor = Shader.PropertyToID("_Color");
+        
         private static readonly int ShaderPropertyTintColor = Shader.PropertyToID("_TintColor");
+        private static readonly int ShaderPropertyTexture = Shader.PropertyToID("_MainTex");
 
         LineRenderer Lpr
         {
@@ -44,10 +44,10 @@ namespace neeksdk.Scripts.Properties
             Mbp.SetColor(ShaderPropertyTintColor, GetColor(colorTypes));
             Lpr.SetPropertyBlock(Mbp);
         }
-        
-        public void ApplyColor(ColorTypes colorType)
+
+        public void ApplyTexture(Texture2D texture)
         {
-            Mbp.SetColor(ShaderPropertyColor, GetColor(colorType));
+            Mbp.SetTexture(ShaderPropertyTexture, texture);
             Lpr.SetPropertyBlock(Mbp);
         }
 

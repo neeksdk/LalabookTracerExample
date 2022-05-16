@@ -1,5 +1,5 @@
 using neeksdk.Scripts.Infrastructure.SceneController;
-
+using UnityEngine;
 namespace neeksdk.Scripts.Infrastructure.StateMachine
 {
     public class GameState : IState
@@ -28,7 +28,7 @@ namespace neeksdk.Scripts.Infrastructure.StateMachine
 
         public void Exit()
         {
-            
+            Resources.UnloadUnusedAssets();
         }
     }
 }

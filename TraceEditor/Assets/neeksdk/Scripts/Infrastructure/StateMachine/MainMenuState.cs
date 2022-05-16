@@ -23,13 +23,14 @@ namespace neeksdk.Scripts.Infrastructure.StateMachine
 
         private void LevelClicked(string path)
         {
+            _mainMenuController.ClearMainMenu();
             LevelButton.OnLevelClicked -= LevelClicked;
             _stateMachine.Enter<LoadLevelState, string, string>(TEST_SCENE_NAME, path);
         }
 
         public void Exit()
         {
-            _mainMenuController.ClearMainMenu();
+            
         }
     }
 }

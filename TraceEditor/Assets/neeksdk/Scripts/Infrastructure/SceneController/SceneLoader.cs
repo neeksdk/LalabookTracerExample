@@ -12,7 +12,6 @@ namespace neeksdk.Scripts.Infrastructure.SceneController
         public SceneLoader(ICoroutineRunner coroutineRunner) => _coroutineRunner = coroutineRunner;
 
         public void Load(string name, Action onLoaded = null) => _coroutineRunner.StartCoroutine((LoadScene(name, onLoaded)));
-  
 
         private IEnumerator LoadScene(string nextScene, Action onLoaded = null)
         {
@@ -22,12 +21,26 @@ namespace neeksdk.Scripts.Infrastructure.SceneController
                 yield break;
             }
       
-            AsyncOperation waitNextScene = SceneManager.LoadSceneAsync(nextScene);
+            AsyncOperation waitNextScene = SceneManager.LoadSceneAsync(nextScene, LoadSceneMode.Single);
 
             while (!waitNextScene.isDone)
                 yield return null;
-      
+
+            UnloadUnusedScenes();
             onLoaded?.Invoke();
+        }
+
+        private void UnloadUnusedScenes()
+        {
+            string activeSceneName = SceneManager.GetActiveScene().name;
+            for (int i = 0; i < SceneManager.sceneCount; i++)
+            {
+                Scene scene = SceneManager.GetSceneAt(i);
+                if (scene.name != activeSceneName)
+                {
+                    SceneManager.UnloadSceneAsync(scene);
+                }
+            }
         }
     }
 }

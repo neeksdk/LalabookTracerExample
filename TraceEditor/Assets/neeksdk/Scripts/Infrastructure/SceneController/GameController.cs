@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using neeksdk.Scripts.FigureTracer;
+using neeksdk.Scripts.Game;
 using neeksdk.Scripts.Infrastructure.Factory;
 using neeksdk.Scripts.Infrastructure.SaveLoad;
 using neeksdk.Scripts.Infrastructure.StateMachine;
@@ -8,9 +9,6 @@ using neeksdk.Scripts.StaticData.LinesData;
 using neeksdk.Scripts.UI;
 using RSG;
 using UnityEngine;
-
-//if want to show full path of figure
-//#define USE_SORTING_ORDER
 
 namespace neeksdk.Scripts.Infrastructure.SceneController
 {
@@ -40,8 +38,7 @@ namespace neeksdk.Scripts.Infrastructure.SceneController
             Promise promise = new Promise();
             _gameInterfaceView = GameObject.FindObjectOfType<GameInterfaceView>();
             _figureContainer = GameObject.FindObjectOfType<FigureContainer>();
-            _gameInterfaceView.SetupView();
-            
+
             if (!SaveLoadDataClass.TryLoadFigureByFile(figurePath, out BezierFigureData figureData))
             {
                 promise.Resolve();
@@ -49,8 +46,9 @@ namespace neeksdk.Scripts.Infrastructure.SceneController
                 
                 return promise;
             }
-
+            
             _allFigureData = figureData;
+            _allLines.Clear();
             for (int index = 0; index < figureData.BezierLinesData.Count; index++)
             {
                 FingerPointer fingerPointer = _bezierLineFactory.InstantiateNewFingerPointer(_figureContainer.transform, Vector3.zero);
@@ -78,16 +76,14 @@ namespace neeksdk.Scripts.Infrastructure.SceneController
                 promises.Add(lineDrawPromise);
             }
 
-            Promise.Sequence(promises).Then(StartNextLineDraw);
+            Promise.Sequence(promises).Then(StartNextLineDraw).Then(() => _gameInterfaceView.SetupView());
         }
 
         private void StartNextLineDraw()
         {
             _currentLineIndex += 1;
             _currentFingerPointer = _allLines[_currentLineIndex];
-#if USE_SORTING_ORDER
-            _currenFingerPointer.SetSortingOrder(1);
-#endif
+            _currentFingerPointer.SetSortingOrder(1);
             _currentFingerPointer.SetupFingerPointer(Camera.main);
             _currentFingerPointer.BeginDrag();
             _currentFingerPointer.OnDestinationReached += DestinationReached;
@@ -104,9 +100,8 @@ namespace neeksdk.Scripts.Infrastructure.SceneController
             {
                 if (_allLines.Count > _currentLineIndex + 1)
                 {
-#if USE_SORTING_ORDER
+
                     _allLines[_currentLineIndex].SetSortingOrder(0);
-#endif
                     StartNextLineDraw();
                 }
                 else
