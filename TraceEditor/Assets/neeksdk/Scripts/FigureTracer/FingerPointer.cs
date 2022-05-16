@@ -76,9 +76,7 @@ namespace neeksdk.Scripts.FigureTracer
             _path.positionCount = 1;
             Vector3 previousPosition = _positionData[0].DotPosition;
             _path.SetPosition(0, previousPosition);
-            _startDot.position = previousPosition;
-            _endDot.position = previousPosition;
-            _endDotRadialArtGo.SetActive(false);
+            SetInitialDotPositions(previousPosition);
 
             List<Func<IPromise>> promises = new List<Func<IPromise>>();
             for (int i = 1; i < _positionData.Count; i++)
@@ -225,7 +223,26 @@ namespace neeksdk.Scripts.FigureTracer
         }
         
         private void FingerStartDragging() => OnFingerStartDragging?.Invoke();
+        
+        private void SetInitialDotPositions(Vector3 previousPosition)
+        {
+            _startDot.position = previousPosition;
+            _startDot.gameObject.SetActive(true);
+            _endDot.position = previousPosition;
+            _endDot.gameObject.SetActive(true);
+            _endDotRadialArtGo.SetActive(false);
+        }
 
+        private void EmitParticlesOnMove()
+        {
+            if (_particleSystem.isPlaying)
+            {
+                return;
+            }
+            
+            _particleSystem.Play();
+        }
+        
         private class PositionData
         {
             public Vector3 DotPosition;
@@ -239,16 +256,6 @@ namespace neeksdk.Scripts.FigureTracer
                 DotPosition = position,
                 IsSegment = isSegment
             };
-        }
-
-        private void EmitParticlesOnMove()
-        {
-            if (_particleSystem.isPlaying)
-            {
-                return;
-            }
-            
-            _particleSystem.Play();
         }
     }
 }
