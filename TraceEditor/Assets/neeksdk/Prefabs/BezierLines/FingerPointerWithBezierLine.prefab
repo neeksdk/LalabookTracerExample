@@ -453,7 +453,6 @@ MonoBehaviour:
   _startDot: {fileID: 4990364290291235120}
   _endDot: {fileID: 8276622642891500342}
   _endDotRadialArtGo: {fileID: 1012609936110024039}
-  _particleSystem: {fileID: 0}
 --- !u!120 &1255115943335395522
 LineRenderer:
   m_ObjectHideFlags: 0
