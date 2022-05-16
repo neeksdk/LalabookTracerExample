@@ -27,5 +27,19 @@ namespace neeksdk.Scripts.Extensions
             lineRenderer.positionCount = pointList.Count;
             lineRenderer.SetPositions(pointList.ToArray());
         }
+
+        public static List<Vector3> GetBezierLinePositions(Vector3 initialPos, Vector3 dot, Vector3 bezierControlDot, int vertexCount = 12)
+        {
+            List<Vector3> pointList = new List<Vector3>();
+            for (float ratio = 0.5f / vertexCount; ratio < 1; ratio += 1.0f / vertexCount)
+            {
+                Vector3 tangentLineVertex1 = Vector3.Lerp(initialPos, bezierControlDot, ratio);
+                Vector3 tangentLineVertex2 = Vector3.Lerp(bezierControlDot, dot, ratio);
+                Vector3 bezierPoint = Vector3.Lerp(tangentLineVertex1, tangentLineVertex2, ratio);
+                pointList.Add(bezierPoint);
+            }
+
+            return pointList;
+        }
     }
 }

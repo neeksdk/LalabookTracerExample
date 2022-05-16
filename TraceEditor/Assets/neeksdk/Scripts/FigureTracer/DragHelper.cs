@@ -41,6 +41,7 @@ namespace neeksdk.Scripts.FigureTracer
             }
 
             _isDragging = false;
+            OnFingerOutOfPointer?.Invoke();
         }
 
         private void OnMouseDrag()
