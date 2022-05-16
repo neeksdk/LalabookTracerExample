@@ -90,9 +90,6 @@ namespace neeksdk.Editor {
             EditorGUILayout.BeginVertical();
             _mySerializedObject.Update();
 
-            _myTarget.figureName = EditorGUILayout.TextField("Figure name:", string.IsNullOrEmpty(_myTarget.figureName) ? "Stage" : _myTarget.figureName);
-            _myTarget.figureId = EditorGUILayout.IntField("Figure ID: ", Mathf.Max(1, _myTarget.figureId));
-
             EditorGUILayout.BeginHorizontal();
             bool buttonSave =
                 GUILayout.Button("Save", GUILayout.Height(2 * EditorGUIUtility.singleLineHeight));
@@ -241,6 +238,7 @@ namespace neeksdk.Editor {
                 if (newLinePrefab != null)
                 {
                     _myTarget.LineRenderers.Add(newLinePrefab);
+                    SelectBezierLineForEditing(_myTarget.LineRenderers.IndexOf(newLinePrefab));
                 }
                 
                 Repaint();
@@ -542,7 +540,7 @@ namespace neeksdk.Editor {
                     Vector3 dotPos = lineData.LineDots[i].FromSerializedVector();
                     Vector3 bezierControlDotPos = lineData.BezierControlDots[i].FromSerializedVector();
                     (int row, int col) coords = dotPos.WorldToGridCoordinates();
-                    BezierLineFactory.InstantiateDotPrefab(coords, _pieceSelected, _selectedBezierLine,  _myTarget.transform.GridToWorldCoordinates(coords.col, coords.row));
+                    BezierLineFactory.InstantiateDotPrefab(coords, _pieceSelected, _selectedBezierLine,  _myTarget.transform.GridToWorldCoordinates(coords.row, coords.col));
                     _selectedBezierLine.Dots[i].SetBezierControlPointPosition(bezierControlDotPos);
                 }
             }   

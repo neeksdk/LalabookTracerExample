@@ -8,9 +8,7 @@ namespace neeksdk.Scripts.LevelCreator
 {
     public class FigureConstructor : MonoBehaviour {
         public bool isHillSelected = false, isHillSelectedRightOriented = false;
-
-        [SerializeField] public string figureName;
-        [SerializeField] public int figureId;
+        
         [SerializeField] private List<BezierLine> _lineRenderers;
 
         public List<BezierLine> LineRenderers {
