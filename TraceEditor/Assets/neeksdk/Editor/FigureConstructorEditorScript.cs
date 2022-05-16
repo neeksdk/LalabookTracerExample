@@ -307,13 +307,7 @@ namespace neeksdk.Editor {
             ActivateAllLines(false);
             _selectedBezierLine = _myTarget.LineRenderers[i];
             _selectedBezierLine.ChangeDotsAlpha(true);
-            if (_selectedBezierLine.Dots.Count == 0 && _selectedBezierLine.transform.childCount > 0)
-            {
-                foreach (IBezierLinePart bezierLinePart in _selectedBezierLine.transform.GetComponentsInChildren<IBezierLinePart>())
-                {
-                    _selectedBezierLine.Dots.Add(bezierLinePart);
-                }
-            }
+            _selectedBezierLine.CheckDots();
         }
 
         private void ActivateAllLines(bool show = true)

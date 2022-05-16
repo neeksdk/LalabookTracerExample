@@ -97,7 +97,7 @@ namespace neeksdk.Scripts.Infrastructure.SceneController
             _currenFingerPointer.OnFingerStartDragging -= FingerStartDragging;
             _currenFingerPointer.EndDrag().Then(() =>
             {
-                if (_allLines.Count < _currentLineIndex + 1)
+                if (_allLines.Count > _currentLineIndex + 1)
                 {
                     StartNextLineDraw();
                     //todo: change sorting orders

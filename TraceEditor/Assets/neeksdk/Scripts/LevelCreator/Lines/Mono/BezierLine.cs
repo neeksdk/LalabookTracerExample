@@ -85,6 +85,19 @@ namespace neeksdk.Scripts.LevelCreator.Lines.Mono
             }
         }
 
+        public void CheckDots()
+        {
+            if (Dots.Count != 0 || transform.childCount <= 0)
+            {
+                return;
+            }
+            
+            foreach (IBezierLinePart bezierLinePart in transform.GetComponentsInChildren<IBezierLinePart>())
+            {
+                Dots.Add(bezierLinePart);
+            }
+        }
+
         private void UpdateLine()
         {
             if (_startLinePoint == null || Dots.Count == 0)

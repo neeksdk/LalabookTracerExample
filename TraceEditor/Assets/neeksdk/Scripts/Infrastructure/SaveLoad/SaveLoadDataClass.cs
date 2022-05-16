@@ -19,6 +19,7 @@ namespace neeksdk.Scripts.Infrastructure.SaveLoad
                 BezierLine bezierLine = bezierLines[i];
                 if (bezierLine != null)
                 {
+                    bezierLine.CheckDots();
                     int dotsCount = bezierLine.Dots.Count;
                     BezierDotsData dotsData = new BezierDotsData();
                     dotsData.LineDots = new SerializedVectorData[dotsCount];
@@ -34,9 +35,14 @@ namespace neeksdk.Scripts.Infrastructure.SaveLoad
                 }
             }
 
-            string destination = EditorUtility.OpenFilePanel("Select file to save", Path.Combine(Application.streamingAssetsPath, "FigureAssets"), "dat");
-            FileStream file;
+            string destination = EditorUtility.SaveFilePanel("Select file to save", Path.Combine(Application.streamingAssetsPath, "FigureAssets"), "new_figure","dat");
 
+            if (string.IsNullOrEmpty(destination))
+            {
+                return;
+            }
+            
+            FileStream file;
             if (File.Exists(destination)) {
                 file = File.OpenWrite(destination);
             } else {
