@@ -1,1 +1,1 @@
-# LalabookTracerExample
+Описание задания с примерами кода в файле Lalabook Tracer Instruction_RU.pdf
